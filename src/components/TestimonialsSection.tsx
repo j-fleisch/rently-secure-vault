@@ -3,25 +3,25 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     name: "Sarah Mitchell",
-    location: "Manchester, UK",
-    text: "Got my landlord policy sorted in minutes. The process was incredibly smooth and saved me over £300 compared to my previous insurer.",
+    location: "Toronto, ON",
+    text: "Got my landlord policy sorted in minutes. The process was incredibly smooth and saved me over $300 compared to my previous insurer.",
     initials: "SM",
   },
   {
-    name: "James Okonkwo",
-    location: "Birmingham, UK",
-    text: "As a tenant, finding renters insurance was always a headache. ShieldRent made it simple and affordable. Highly recommended!",
+    name: "James Okafor",
+    location: "Ottawa, ON",
+    text: "As a tenant, finding renters insurance was always a headache. Cedar made it simple and affordable. Highly recommended!",
     initials: "JO",
   },
   {
     name: "Laura Chen",
-    location: "London, UK",
-    text: "Managing multiple rental properties is stressful enough. ShieldRent handles all my insurance needs with one easy dashboard.",
+    location: "Mississauga, ON",
+    text: "Managing multiple rental properties is stressful enough. Cedar handles all my insurance needs with one easy dashboard.",
     initials: "LC",
   },
   {
     name: "David Patel",
-    location: "Leeds, UK",
+    location: "Hamilton, ON",
     text: "Their claims process was swift and hassle-free. Had my payout within a week. Truly a landlord's best friend.",
     initials: "DP",
   },
@@ -38,7 +38,7 @@ const TestimonialsSection = () => {
             ))}
           </div>
           <h2 className="text-3xl md:text-4xl">
-            Trusted by landlords & tenants across the UK
+            Trusted by landlords & tenants across Ontario
           </h2>
         </div>
 

@@ -3,7 +3,7 @@ import { MapPin, ArrowRight, Shield, Star, Award, CheckCircle } from "lucide-rea
 import heroImage from "@/assets/hero-illustration.webp";
 
 const trustBadges = [
-  { icon: Shield, label: "FCA Regulated" },
+  { icon: Shield, label: "FSRA Regulated" },
   { icon: Star, label: "4.8/5 Customer Rating" },
   { icon: Award, label: "A-Rated Underwriters" },
   { icon: CheckCircle, label: "Instant Cover Available" },
@@ -37,7 +37,7 @@ const HeroSection = () => {
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Your property postcode..."
+                placeholder="Your postal code..."
                 className="w-full h-12 pl-10 pr-4 rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>

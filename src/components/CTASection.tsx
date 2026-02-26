@@ -9,7 +9,7 @@ const CTASection = () => {
             Ready to protect your property?
           </h2>
           <p className="text-primary-foreground/80 max-w-lg mx-auto mb-8">
-            Join thousands of landlords and tenants who trust ShieldRent for fast, affordable, and comprehensive insurance cover.
+            Join thousands of landlords and tenants across Ontario who trust Cedar for fast, affordable, and comprehensive insurance cover.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

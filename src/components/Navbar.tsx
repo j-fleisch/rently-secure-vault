@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import cedarLogo from "@/assets/cedar-logo.png";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -17,8 +16,8 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/">
-          <img src={cedarLogo} alt="Cedar" className="h-8" />
+        <Link to="/" className="text-xl font-bold text-primary tracking-[0.3em] uppercase font-sans">
+          Cedar
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import cedarLogo from "@/assets/cedar-logo.png";
 
 const Footer = () => {
   return (
@@ -7,8 +6,8 @@ const Footer = () => {
       <div className="container">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <Link to="/">
-              <img src={cedarLogo} alt="Cedar" className="h-7" />
+            <Link to="/" className="text-lg font-bold text-primary tracking-[0.3em] uppercase font-sans">
+              Cedar
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Specialist property insurance for landlords and tenants. Fast quotes, comprehensive cover, expert support.

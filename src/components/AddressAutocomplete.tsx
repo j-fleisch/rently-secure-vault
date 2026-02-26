@@ -30,7 +30,7 @@ const AddressAutocomplete = ({
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const apiKey = "AIzaSyD9xwpFwqvZlEA-R6hdNJK4xNWMK9IF7Po";
     if (!apiKey) {
       console.warn("Google Maps API key not configured");
       return;

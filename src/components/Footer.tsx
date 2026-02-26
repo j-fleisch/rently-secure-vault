@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <Link to="/" className="font-serif text-xl font-bold text-primary">
-              ShieldRent
+              Cedar
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Specialist property insurance for landlords and tenants. Fast quotes, comprehensive cover, expert support.
@@ -46,8 +46,8 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ShieldRent Insurance MGA. All rights reserved.</p>
-          <p className="mt-1">ShieldRent is a trading name. Authorised and regulated by the Financial Conduct Authority.</p>
+          <p>© {new Date().getFullYear()} Cedar Insurance MGA. All rights reserved.</p>
+          <p className="mt-1">Cedar is a trading name. Authorised and regulated by the Financial Conduct Authority.</p>
         </div>
       </div>
     </footer>

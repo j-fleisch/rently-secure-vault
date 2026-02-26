@@ -17,7 +17,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="font-serif text-2xl font-bold text-primary tracking-tight">
-          ShieldRent
+          Cedar
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

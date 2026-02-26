@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Star, Award, CheckCircle } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -11,6 +13,16 @@ const trustBadges = [
 ];
 
 const HeroSection = () => {
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const navigate = useNavigate();
+
+  const handleGetQuote = () => {
+    const params = selectedAddress
+      ? `?address=${encodeURIComponent(selectedAddress)}`
+      : "";
+    navigate(`/quote${params}`);
+  };
+
   return (
     <section className="relative overflow-hidden">
       {/* Centered hero — Thimble-inspired */}
@@ -34,8 +46,14 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-            <AddressAutocomplete />
-            <Button variant="hero" className="h-12 px-8 gap-2">
+            <AddressAutocomplete
+              onSelect={(address) => setSelectedAddress(address)}
+            />
+            <Button
+              variant="hero"
+              className="h-12 px-8 gap-2"
+              onClick={handleGetQuote}
+            >
               Get a Quote <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

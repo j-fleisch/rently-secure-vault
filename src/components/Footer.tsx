@@ -47,7 +47,7 @@ const Footer = () => {
 
         <div className="mt-12 pt-8 border-t border-border text-center text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Cedar Insurance MGA. All rights reserved.</p>
-          <p className="mt-1">Cedar is a trading name. Authorised and regulated by the Financial Conduct Authority.</p>
+          <p className="mt-1">Cedar is a trading name. Licensed by the Financial Services Regulatory Authority of Ontario (FSRA).</p>
         </div>
       </div>
     </footer>

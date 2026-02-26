@@ -1,14 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MapPin } from "lucide-react";
 
-interface Prediction {
-  place_id: string;
+interface SuggestionItem {
+  placeId: string;
+  mainText: string;
+  secondaryText: string;
   description: string;
-  structured_formatting: {
-    main_text: string;
-    main_text_matched_substrings?: { offset: number; length: number }[];
-    secondary_text: string;
-  };
+  matchedSubstrings?: { startOffset: number; endOffset: number }[];
 }
 
 interface AddressAutocompleteProps {
@@ -21,24 +19,27 @@ const AddressAutocomplete = ({
   placeholder = "Enter your property address...",
 }: AddressAutocompleteProps) => {
   const [query, setQuery] = useState("");
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictions, setPredictions] = useState<SuggestionItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const [serviceReady, setServiceReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const autocompleteService = useRef<any>(null);
+  const autocompleteSuggestionRef = useRef<any>(null);
+  const sessionTokenRef = useRef<any>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     const apiKey = "AIzaSyD9xwpFwqvZlEA-R6hdNJK4xNWMK9IF7Po";
-    if (!apiKey) {
-      console.warn("Google Maps API key not configured");
-      return;
-    }
 
-    if ((window as any).google?.maps?.places) {
-      autocompleteService.current = new (window as any).google.maps.places.AutocompleteService();
-      setServiceReady(true);
+    const initPlaces = async () => {
+      if (!(window as any).google?.maps) return;
+      const placesLib = await (window as any).google.maps.importLibrary("places");
+      autocompleteSuggestionRef.current = placesLib.AutocompleteSuggestion;
+      sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
+    };
+
+    if ((window as any).google?.maps?.importLibrary) {
+      initPlaces();
       return;
     }
 
@@ -47,39 +48,67 @@ const AddressAutocomplete = ({
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      autocompleteService.current = new (window as any).google.maps.places.AutocompleteService();
-      setServiceReady(true);
+      initPlaces();
     };
     document.head.appendChild(script);
   }, []);
 
-  const fetchPredictions = useCallback(
-    (input: string) => {
-      if (!autocompleteService.current || input.length < 2) {
-        setPredictions([]);
-        setIsOpen(false);
-        return;
-      }
+  const normalizeSuggestion = (rawSuggestion: any): SuggestionItem | null => {
+    const placePrediction = rawSuggestion?.placePrediction;
+    if (!placePrediction) return null;
 
-      autocompleteService.current.getPlacePredictions(
-        {
-          input,
-          componentRestrictions: { country: "ca" },
-          types: ["address"],
-        },
-        (results: any[] | null, status: string) => {
-          if (status === "OK" && results) {
-            setPredictions(results as Prediction[]);
-            setIsOpen(true);
-          } else {
-            setPredictions([]);
-            setIsOpen(false);
-          }
-        }
-      );
-    },
-    [serviceReady]
-  );
+    const mainText =
+      placePrediction?.structuredFormat?.mainText?.text ||
+      placePrediction?.text?.text ||
+      "";
+
+    const secondaryText =
+      placePrediction?.structuredFormat?.secondaryText?.text || "";
+
+    const description =
+      typeof placePrediction?.text?.toString === "function"
+        ? placePrediction.text.toString()
+        : [mainText, secondaryText].filter(Boolean).join(", ");
+
+    return {
+      placeId: placePrediction?.placeId || description,
+      mainText: mainText || description,
+      secondaryText,
+      description,
+      matchedSubstrings: placePrediction?.structuredFormat?.mainText?.matches,
+    };
+  };
+
+  const fetchPredictions = useCallback(async (input: string) => {
+    if (!autocompleteSuggestionRef.current || input.trim().length < 3) {
+      setPredictions([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const currentRequestId = ++requestIdRef.current;
+
+    try {
+      const result = await autocompleteSuggestionRef.current.fetchAutocompleteSuggestions({
+        input,
+        includedRegionCodes: ["ca"],
+        sessionToken: sessionTokenRef.current,
+      });
+
+      if (currentRequestId !== requestIdRef.current) return;
+
+      const nextPredictions = (result?.suggestions || [])
+        .map(normalizeSuggestion)
+        .filter(Boolean) as SuggestionItem[];
+
+      setPredictions(nextPredictions);
+      setIsOpen(nextPredictions.length > 0);
+    } catch (error) {
+      console.error("Autocomplete suggestions failed:", error);
+      setPredictions([]);
+      setIsOpen(false);
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -87,14 +116,14 @@ const AddressAutocomplete = ({
     setActiveIndex(-1);
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => fetchPredictions(value), 300);
+    debounceTimer.current = setTimeout(() => fetchPredictions(value), 220);
   };
 
-  const handleSelect = (prediction: Prediction) => {
+  const handleSelect = (prediction: SuggestionItem) => {
     setQuery(prediction.description);
     setPredictions([]);
     setIsOpen(false);
-    onSelect?.(prediction.description, prediction.place_id);
+    onSelect?.(prediction.description, prediction.placeId);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -124,51 +153,34 @@ const AddressAutocomplete = ({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const highlightMatch = (prediction: Prediction) => {
-    const { main_text, main_text_matched_substrings, secondary_text } =
-      prediction.structured_formatting;
+  const highlightMainText = (prediction: SuggestionItem) => {
+    const matches = prediction.matchedSubstrings || [];
+    if (!matches.length) return prediction.mainText;
 
-    if (main_text_matched_substrings && main_text_matched_substrings.length > 0) {
-      const sorted = [...main_text_matched_substrings].sort(
-        (a, b) => b.offset - a.offset
-      );
-      const parts: { text: string; bold: boolean }[] = [];
-      let lastIndex = main_text.length;
+    const sorted = [...matches].sort((a, b) => b.startOffset - a.startOffset);
+    const parts: { text: string; bold: boolean }[] = [];
+    let lastIndex = prediction.mainText.length;
 
-      for (const sub of sorted) {
-        if (sub.offset + sub.length < lastIndex) {
-          parts.unshift({ text: main_text.slice(sub.offset + sub.length, lastIndex), bold: false });
-        }
-        parts.unshift({ text: main_text.slice(sub.offset, sub.offset + sub.length), bold: true });
-        lastIndex = sub.offset;
+    for (const match of sorted) {
+      if (match.endOffset < lastIndex) {
+        parts.unshift({ text: prediction.mainText.slice(match.endOffset, lastIndex), bold: false });
       }
-      if (lastIndex > 0) {
-        parts.unshift({ text: main_text.slice(0, lastIndex), bold: false });
-      }
-
-      return (
-        <span>
-          {parts.map((p, i) =>
-            p.bold ? (
-              <span key={i} className="font-bold text-foreground">{p.text}</span>
-            ) : (
-              <span key={i}>{p.text}</span>
-            )
-          )}
-          {secondary_text && (
-            <span className="text-muted-foreground"> {secondary_text}</span>
-          )}
-        </span>
-      );
+      parts.unshift({ text: prediction.mainText.slice(match.startOffset, match.endOffset), bold: true });
+      lastIndex = match.startOffset;
     }
 
-    return (
-      <span>
-        {main_text}
-        {secondary_text && (
-          <span className="text-muted-foreground"> {secondary_text}</span>
-        )}
-      </span>
+    if (lastIndex > 0) {
+      parts.unshift({ text: prediction.mainText.slice(0, lastIndex), bold: false });
+    }
+
+    return parts.map((part, i) =>
+      part.bold ? (
+        <span key={i} className="font-bold text-foreground">
+          {part.text}
+        </span>
+      ) : (
+        <span key={i}>{part.text}</span>
+      )
     );
   };
 
@@ -192,11 +204,11 @@ const AddressAutocomplete = ({
       {isOpen && predictions.length > 0 && (
         <ul
           role="listbox"
-          className="absolute z-50 left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          className="absolute z-[60] left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto"
         >
           {predictions.map((prediction, index) => (
             <li
-              key={prediction.place_id}
+              key={`${prediction.placeId}-${index}`}
               role="option"
               aria-selected={index === activeIndex}
               onClick={() => handleSelect(prediction)}
@@ -207,7 +219,10 @@ const AddressAutocomplete = ({
             >
               <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">
-                {highlightMatch(prediction)}
+                {highlightMainText(prediction)}
+                {prediction.secondaryText && (
+                  <span className="text-muted-foreground"> {prediction.secondaryText}</span>
+                )}
               </span>
             </li>
           ))}

@@ -6,17 +6,26 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 const CedarIcon = () => (
   <svg
-    viewBox="0 0 80 100"
-    className="w-16 h-20 md:w-20 md:h-24"
+    viewBox="0 0 80 110"
+    className="mx-auto w-16 h-20 md:w-20 md:h-24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
+    {/* Shield at the top */}
+    <path
+      d="M40 2 C40 2 28 8 28 8 C28 8 28 18 28 18 C28 26 33 32 40 34 C47 32 52 26 52 18 C52 18 52 8 52 8 Z"
+      className="stroke-accent"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
     {/* Three horizontal dashes — narrowest at top, widest at bottom */}
-    <rect x="30" y="12" width="20" height="3" rx="1.5" className="fill-accent" />
-    <rect x="20" y="28" width="40" height="3.5" rx="1.75" className="fill-accent" />
-    <rect x="8"  y="44" width="64" height="4" rx="2" className="fill-accent" />
+    <rect x="30" y="44" width="20" height="3" rx="1.5" className="fill-accent" />
+    <rect x="20" y="56" width="40" height="3.5" rx="1.75" className="fill-accent" />
+    <rect x="8"  y="68" width="64" height="4" rx="2" className="fill-accent" />
     {/* Vertical trunk */}
-    <rect x="37" y="54" width="6" height="34" rx="3" className="fill-accent" />
+    <rect x="37" y="78" width="6" height="28" rx="3" className="fill-accent" />
   </svg>
 );
 

@@ -3,7 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Star, Award, CheckCircle } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import heroImage from "@/assets/hero-illustration.webp";
+
+const CedarIcon = () => (
+  <svg
+    viewBox="0 0 80 100"
+    className="w-16 h-20 md:w-20 md:h-24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Three horizontal dashes — narrowest at top, widest at bottom */}
+    <rect x="30" y="12" width="20" height="3" rx="1.5" className="fill-accent" />
+    <rect x="20" y="28" width="40" height="3.5" rx="1.75" className="fill-accent" />
+    <rect x="8"  y="44" width="64" height="4" rx="2" className="fill-accent" />
+    {/* Vertical trunk */}
+    <rect x="37" y="54" width="6" height="34" rx="3" className="fill-accent" />
+  </svg>
+);
 
 const trustBadges = [
   { icon: Shield, label: "FSRA Regulated" },
@@ -28,12 +43,7 @@ const HeroSection = () => {
       {/* Centered hero — Thimble-inspired */}
       <div className="container py-20 md:py-32">
         <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in-up">
-          <img
-            src={heroImage}
-            alt="Property protected by insurance shield"
-            className="mx-auto w-28 h-28 md:w-36 md:h-36 rounded-2xl object-cover"
-            loading="eager"
-          />
+          <CedarIcon />
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
             <span className="italic text-accent">Smart</span> insurance{" "}

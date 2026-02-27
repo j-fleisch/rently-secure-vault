@@ -3,17 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Star, Award, CheckCircle } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-
-const CedarIcon = () => (
-  <div className="mx-auto flex flex-col items-center gap-3">
-    {/* Three cedar dashes — bold, minimal, Thimble-style */}
-    <div className="w-12 md:w-16 h-1 rounded-full bg-accent" />
-    <div className="w-24 md:w-32 h-1.5 rounded-full bg-accent" />
-    <div className="w-40 md:w-52 h-2 rounded-full bg-accent" />
-    {/* Trunk */}
-    <div className="w-1.5 h-10 md:h-14 rounded-full bg-accent" />
-  </div>
-);
+import heroImage from "@/assets/hero-illustration.webp";
 
 const trustBadges = [
   { icon: Shield, label: "FSRA Regulated" },
@@ -35,32 +25,43 @@ const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Centered hero — Thimble-inspired */}
-      <div className="container py-20 md:py-32">
-        <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in-up">
-          <CedarIcon />
+      {/* Split hero — Steadily-inspired */}
+      <div className="container py-16 md:py-28">
+        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          {/* Left — copy */}
+          <div className="space-y-8 animate-fade-in-up">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
+              <span className="italic text-accent">Smart</span> insurance{" "}
+              <br className="hidden sm:block" />
+              for landlords & tenants.
+            </h1>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
-            <span className="italic text-accent">Smart</span> insurance{" "}
-            <br className="hidden sm:block" />
-            for landlords & tenants.
-          </h1>
+            <p className="text-lg text-muted-foreground max-w-md">
+              Get a quote in seconds. Get covered in minutes.
+            </p>
 
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Get a quote in seconds. Get covered in minutes.
-          </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-lg">
+              <AddressAutocomplete
+                onSelect={(address) => setSelectedAddress(address)}
+              />
+              <Button
+                variant="hero"
+                className="h-12 px-8 gap-2"
+                onClick={handleGetQuote}
+              >
+                Get a Quote <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-            <AddressAutocomplete
-              onSelect={(address) => setSelectedAddress(address)}
+          {/* Right — image */}
+          <div className="flex justify-center md:justify-end animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+            <img
+              src={heroImage}
+              alt="Modern property protected by Cedar insurance"
+              className="w-full max-w-md md:max-w-lg rounded-3xl object-cover"
+              loading="eager"
             />
-            <Button
-              variant="hero"
-              className="h-12 px-8 gap-2"
-              onClick={handleGetQuote}
-            >
-              Get a Quote <ArrowRight className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </div>

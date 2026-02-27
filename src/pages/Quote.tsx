@@ -213,9 +213,6 @@ const Quote = () => {
 
   const handleOwnerTypeSelect = (value: string) => {
     updateField("ownerType", value);
-    if (value === "homeowner") return; // handled in render
-    // Auto-advance after selection
-    setTimeout(() => setCurrentStep(1), 300);
   };
 
   // ── Render step content ──

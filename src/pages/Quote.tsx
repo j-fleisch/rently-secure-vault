@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar, Layers, Users, Tag } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar, Layers, Users, Tag, Plus, X, Mail } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SelectionCard from "@/components/quote/SelectionCard";
@@ -106,6 +106,7 @@ const TENANT_STEPS = [
   { id: "discounts", label: "Discounts" },
   { id: "coverage", label: "Coverage" },
   { id: "contact", label: "Contact" },
+  { id: "share-quote", label: "Share" },
 ];
 
 const LANDLORD_STEPS = [
@@ -116,6 +117,7 @@ const LANDLORD_STEPS = [
   { id: "currently-insured", label: "Insured?" },
   { id: "coverage", label: "Coverage" },
   { id: "contact", label: "Contact" },
+  { id: "share-quote", label: "Share" },
 ];
 
 // ── Form data shape ──
@@ -148,6 +150,7 @@ const Quote = () => {
   const address = searchParams.get("address") || "";
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [partnerEmails, setPartnerEmails] = useState<string[]>([""]);
   const [formData, setFormData] = useState<FormData>({
     address,
     ownerType: "",
@@ -188,6 +191,7 @@ const Quote = () => {
       case "property-details": return !!formData.yearBuilt && !!formData.constructionType && !!formData.buildingSize && !!formData.propertyOwner && !!formData.policyName;
       case "units": return !!formData.unitCount;
       case "contact": return !!formData.firstName && !!formData.email;
+      case "share-quote": return true; // always optional
       default: return false;
     }
   };
@@ -207,8 +211,22 @@ const Quote = () => {
     }
   };
   const handleSubmit = () => {
-    alert("Thank you! We'll send your quote to " + formData.email);
+    const validPartnerEmails = partnerEmails.filter((e) => e.trim() !== "");
+    const allRecipients = [formData.email, ...validPartnerEmails].join(", ");
+    alert("Thank you! We'll send your quote to: " + allRecipients);
     navigate("/");
+  };
+
+  const addPartnerEmail = () => {
+    setPartnerEmails((prev) => [...prev, ""]);
+  };
+
+  const updatePartnerEmail = (index: number, value: string) => {
+    setPartnerEmails((prev) => prev.map((e, i) => (i === index ? value : e)));
+  };
+
+  const removePartnerEmail = (index: number) => {
+    setPartnerEmails((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleOwnerTypeSelect = (value: string) => {
@@ -567,6 +585,69 @@ const Quote = () => {
                 />
               </div>
             </div>
+          </div>
+        );
+
+      // ── Share quote step ──
+      case "share-quote":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl mb-2">Share your quote with partners</h2>
+              <p className="text-muted-foreground">
+                Optionally send a copy of your bindable quote to your real estate agent, lender, mortgage broker, property manager, or anyone else involved.
+              </p>
+            </div>
+
+            <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="w-5 h-5 text-accent" />
+                <h3 className="font-semibold text-foreground">Partner Emails</h3>
+                <span className="text-xs text-muted-foreground">(optional)</span>
+              </div>
+
+              <div className="space-y-3">
+                {partnerEmails.map((email, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => updatePartnerEmail(index, e.target.value)}
+                      placeholder={
+                        index === 0
+                          ? "e.g. agent@realestate.com"
+                          : index === 1
+                          ? "e.g. broker@mortgage.com"
+                          : "e.g. manager@property.com"
+                      }
+                      className="flex-1 h-12 px-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    {partnerEmails.length > 1 && (
+                      <button
+                        onClick={() => removePartnerEmail(index)}
+                        className="h-10 w-10 rounded-lg border border-input bg-background flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addPartnerEmail}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add another email
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Your quote will always be sent to <span className="font-medium text-foreground">{formData.email}</span>. Any partner emails above will receive a copy.
+            </p>
           </div>
         );
     }

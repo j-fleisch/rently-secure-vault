@@ -24,6 +24,7 @@ const AddressAutocomplete = ({
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const autocompleteSuggestionRef = useRef<any>(null);
+  const autocompleteServiceRef = useRef<any>(null);
   const sessionTokenRef = useRef<any>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
   const requestIdRef = useRef(0);
@@ -34,8 +35,18 @@ const AddressAutocomplete = ({
     const initPlaces = async () => {
       if (!(window as any).google?.maps) return;
       const placesLib = await (window as any).google.maps.importLibrary("places");
-      autocompleteSuggestionRef.current = placesLib.AutocompleteSuggestion;
-      sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
+
+      if (placesLib?.AutocompleteSuggestion) {
+        autocompleteSuggestionRef.current = placesLib.AutocompleteSuggestion;
+      } else if ((window as any).google?.maps?.places?.AutocompleteService) {
+        autocompleteServiceRef.current = new (window as any).google.maps.places.AutocompleteService();
+      }
+
+      if (placesLib?.AutocompleteSessionToken) {
+        sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
+      } else if ((window as any).google?.maps?.places?.AutocompleteSessionToken) {
+        sessionTokenRef.current = new (window as any).google.maps.places.AutocompleteSessionToken();
+      }
     };
 
     if ((window as any).google?.maps?.importLibrary) {
@@ -44,7 +55,7 @@ const AddressAutocomplete = ({
     }
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
@@ -79,8 +90,31 @@ const AddressAutocomplete = ({
     };
   };
 
+  const normalizeLegacySuggestion = (rawPrediction: any): SuggestionItem | null => {
+    if (!rawPrediction) return null;
+
+    const mainText = rawPrediction?.structured_formatting?.main_text || "";
+    const secondaryText = rawPrediction?.structured_formatting?.secondary_text || "";
+    const description = rawPrediction?.description || [mainText, secondaryText].filter(Boolean).join(", ");
+
+    const matchedSubstrings = (rawPrediction?.structured_formatting?.main_text_matched_substrings || []).map(
+      (match: { offset: number; length: number }) => ({
+        startOffset: match.offset,
+        endOffset: match.offset + match.length,
+      })
+    );
+
+    return {
+      placeId: rawPrediction?.place_id || description,
+      mainText: mainText || description,
+      secondaryText,
+      description,
+      matchedSubstrings,
+    };
+  };
+
   const fetchPredictions = useCallback(async (input: string) => {
-    if (!autocompleteSuggestionRef.current || input.trim().length < 3) {
+    if (input.trim().length < 3) {
       setPredictions([]);
       setIsOpen(false);
       return;
@@ -89,20 +123,58 @@ const AddressAutocomplete = ({
     const currentRequestId = ++requestIdRef.current;
 
     try {
-      const result = await autocompleteSuggestionRef.current.fetchAutocompleteSuggestions({
-        input,
-        includedRegionCodes: ["ca"],
-        sessionToken: sessionTokenRef.current,
-      });
+      if (autocompleteSuggestionRef.current) {
+        const result = await autocompleteSuggestionRef.current.fetchAutocompleteSuggestions({
+          input,
+          includedRegionCodes: ["ca"],
+          sessionToken: sessionTokenRef.current,
+        });
 
-      if (currentRequestId !== requestIdRef.current) return;
+        if (currentRequestId !== requestIdRef.current) return;
 
-      const nextPredictions = (result?.suggestions || [])
-        .map(normalizeSuggestion)
-        .filter(Boolean) as SuggestionItem[];
+        const nextPredictions = (result?.suggestions || [])
+          .map(normalizeSuggestion)
+          .filter(Boolean) as SuggestionItem[];
 
-      setPredictions(nextPredictions);
-      setIsOpen(nextPredictions.length > 0);
+        setPredictions(nextPredictions);
+        setIsOpen(nextPredictions.length > 0);
+        return;
+      }
+
+      if (autocompleteServiceRef.current) {
+        const result = await new Promise<any[]>((resolve, reject) => {
+          autocompleteServiceRef.current.getPlacePredictions(
+            {
+              input,
+              componentRestrictions: { country: "ca" },
+              sessionToken: sessionTokenRef.current,
+            },
+            (predictions: any, status: any) => {
+              const ok = (window as any).google?.maps?.places?.PlacesServiceStatus?.OK;
+              if (status === ok && predictions) {
+                resolve(predictions);
+              } else if (status === ok) {
+                resolve([]);
+              } else {
+                reject(new Error(status || "PREDICTIONS_FAILED"));
+              }
+            }
+          );
+        });
+
+        if (currentRequestId !== requestIdRef.current) return;
+
+        const nextPredictions = result
+          .map(normalizeLegacySuggestion)
+          .filter(Boolean) as SuggestionItem[];
+
+        setPredictions(nextPredictions);
+        setIsOpen(nextPredictions.length > 0);
+        return;
+      }
+
+      setPredictions([]);
+      setIsOpen(false);
     } catch (error) {
       console.error("Autocomplete suggestions failed:", error);
       setPredictions([]);

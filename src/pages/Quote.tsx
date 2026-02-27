@@ -183,7 +183,7 @@ const Quote = () => {
       case "owner-type": return !!formData.ownerType;
       case "currently-insured": return !!formData.currentlyInsured;
       case "discounts": return !!formData.discount;
-      case "coverage": return !!formData.coverage && formData.creditConsent;
+      case "coverage": return !!formData.coverage;
       case "property-type": return !!formData.propertyType;
       case "property-details": return !!formData.yearBuilt && !!formData.constructionType && !!formData.buildingSize && !!formData.propertyOwner && !!formData.policyName;
       case "units": return !!formData.unitCount;

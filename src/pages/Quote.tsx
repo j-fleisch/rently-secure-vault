@@ -16,7 +16,7 @@ const STEPS = [
 const ownerTypes = [
   { value: "landlord", label: "Landlord", description: "I own rental property" },
   { value: "tenant", label: "Tenant", description: "I rent my home" },
-  { value: "both", label: "Both", description: "I own and rent properties" },
+  { value: "homeowner", label: "Homeowner", description: "I own and live in my home" },
 ];
 
 const propertyTypes = [

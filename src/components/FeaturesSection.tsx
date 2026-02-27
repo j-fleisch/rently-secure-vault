@@ -55,8 +55,8 @@ const FeaturesSection = () => {
               <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 <f.icon className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-serif font-bold mb-2">{f.title}</h3>
-              <p className="text-base text-foreground/80 leading-relaxed">
+              <h3 className="text-xl font-serif font-bold mb-2 tracking-wide">{f.title}</h3>
+              <p className="text-base text-foreground leading-relaxed">
                 {f.description}
               </p>
             </div>

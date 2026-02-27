@@ -25,43 +25,36 @@ const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Split hero — Steadily-inspired */}
-      <div className="container py-16 md:py-28">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-          {/* Left — copy */}
-          <div className="space-y-8 animate-fade-in-up">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
-              <span className="italic text-accent">Smart</span> insurance{" "}
-              <br className="hidden sm:block" />
-              for landlords & tenants.
-            </h1>
+      <div className="container py-20 md:py-32">
+        <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in-up">
+          <img
+            src={heroImage}
+            alt="Modern property protected by Cedar insurance"
+            className="mx-auto w-48 h-48 md:w-64 md:h-64 rounded-3xl object-cover"
+            loading="eager"
+          />
 
-            <p className="text-lg text-muted-foreground max-w-md">
-              Get a quote in seconds. Get covered in minutes.
-            </p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
+            <span className="italic text-accent">Smart</span> insurance{" "}
+            <br className="hidden sm:block" />
+            for landlords & tenants.
+          </h1>
 
-            <div className="flex flex-col sm:flex-row gap-3 max-w-lg">
-              <AddressAutocomplete
-                onSelect={(address) => setSelectedAddress(address)}
-              />
-              <Button
-                variant="hero"
-                className="h-12 px-8 gap-2"
-                onClick={handleGetQuote}
-              >
-                Get a Quote <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+            Get a quote in seconds. Get covered in minutes.
+          </p>
 
-          {/* Right — image */}
-          <div className="flex justify-center md:justify-end animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
-            <img
-              src={heroImage}
-              alt="Modern property protected by Cedar insurance"
-              className="w-full max-w-md md:max-w-lg rounded-3xl object-cover"
-              loading="eager"
+          <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+            <AddressAutocomplete
+              onSelect={(address) => setSelectedAddress(address)}
             />
+            <Button
+              variant="hero"
+              className="h-12 px-8 gap-2"
+              onClick={handleGetQuote}
+            >
+              Get a Quote <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>

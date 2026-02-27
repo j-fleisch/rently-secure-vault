@@ -14,7 +14,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="text-xl font-bold text-primary tracking-[0.3em] uppercase font-sans">
           Cedar

@@ -135,6 +135,7 @@ interface FormData {
   // Shared
   currentlyInsured: string;
   coverage: string;
+  creditConsent: boolean;
   firstName: string;
   lastName: string;
   email: string;
@@ -160,6 +161,7 @@ const Quote = () => {
     unitCount: "",
     currentlyInsured: "",
     coverage: "",
+    creditConsent: false,
     firstName: "",
     lastName: "",
     email: "",
@@ -181,7 +183,7 @@ const Quote = () => {
       case "owner-type": return !!formData.ownerType;
       case "currently-insured": return !!formData.currentlyInsured;
       case "discounts": return !!formData.discount;
-      case "coverage": return !!formData.coverage;
+      case "coverage": return !!formData.coverage && formData.creditConsent;
       case "property-type": return !!formData.propertyType;
       case "property-details": return !!formData.yearBuilt && !!formData.constructionType && !!formData.buildingSize && !!formData.propertyOwner && !!formData.policyName;
       case "units": return !!formData.unitCount;
@@ -349,6 +351,30 @@ const Quote = () => {
                   extra={opt.price}
                 />
               ))}
+            </div>
+
+            {/* Credit consent box */}
+            <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
+              <h3 className="font-semibold text-foreground">You could save more on your insurance!</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                I allow Cedar Insurance to use the information I've provided to do a soft credit check now
+                and during any policy update or renewal. I understand this <strong className="text-foreground">will not</strong> affect
+                my credit score.{" "}
+                <a href="#" className="text-accent underline hover:text-accent/80">
+                  Click here to learn more about how we use your credit information.
+                </a>
+              </p>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.creditConsent}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, creditConsent: e.target.checked }))
+                  }
+                  className="h-5 w-5 rounded border-2 border-muted-foreground/30 accent-accent"
+                />
+                <span className="text-sm font-medium text-foreground">I agree</span>
+              </label>
             </div>
           </div>
         );

@@ -25,12 +25,12 @@ const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden">
-      <div className="container py-20 md:py-32">
+      <div className="container pt-10 pb-20 md:pt-16 md:pb-32">
         <div className="max-w-3xl mx-auto text-center space-y-8 animate-fade-in-up">
           <img
             src={heroImage}
             alt="Modern property protected by Cedar insurance"
-            className="mx-auto w-48 h-48 md:w-64 md:h-64 rounded-3xl object-cover"
+            className="mx-auto w-36 h-36 md:w-48 md:h-48 rounded-3xl object-cover"
             loading="eager"
           />
 

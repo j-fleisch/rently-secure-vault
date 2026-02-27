@@ -210,6 +210,17 @@ const Quote = () => {
       }
     }
   };
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateField("phone", formatPhone(e.target.value));
+  };
+
   const handleSubmit = () => {
     const validPartnerEmails = partnerEmails.filter((e) => e.trim() !== "");
     const allRecipients = [formData.email, ...validPartnerEmails].join(", ");
@@ -579,8 +590,9 @@ const Quote = () => {
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
-                  placeholder="(416) 555-0123"
+                  onChange={handlePhoneChange}
+                  placeholder="416-555-0123"
+                  maxLength={12}
                   className="w-full h-12 px-4 rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>

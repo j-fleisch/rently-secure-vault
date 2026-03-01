@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar, Layers, Users, Tag, Plus, X, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar, Layers, Users, Tag, Plus, X, Mail, HelpCircle, Wrench, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SelectionCard from "@/components/quote/SelectionCard";
 import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ── Owner types (shared first step) ──
 const ownerTypes = [
@@ -44,6 +45,16 @@ const landlordPropertyTypes = [
   { value: "multi-unit", label: "Multi-Unit (2-4)" },
   { value: "commercial", label: "Commercial / Mixed Use" },
 ];
+
+// Field visibility per property type
+const fieldVisibility: Record<string, string[]> = {
+  house:      ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
+  condo:      ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "renterType", "rentalDuration", "roofLastUpdated"],
+  apartment:  ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "renterType", "rentalDuration", "systemsUpdated"],
+  townhouse:  ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
+  "multi-unit": ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
+  commercial: ["yearBuilt", "constructionType", "buildingSize", "unitCount", "renterType", "rentalDuration"],
+};
 
 const unitCountOptions = [
   { value: "1", label: "1 Unit", description: "Single rental unit" },
@@ -88,6 +99,22 @@ const policyNameOptions = [
   { value: "other", label: "Other", description: "A different name on the policy" },
 ];
 
+const renterTypeOptions = [
+  { value: "professionals", label: "Professionals or Families", description: "Working adults or families" },
+  { value: "short-term", label: "Short-Term Rental", description: "Airbnb, VRBO, or similar" },
+  { value: "students", label: "Students (under 25)", description: "Post-secondary students" },
+];
+
+const rentalDurationOptions = [
+  { value: "over-3-months", label: "Over 3 Months", description: "Long-term tenants" },
+  { value: "under-3-months", label: "Under 3 Months", description: "Short-term / seasonal tenants" },
+];
+
+const systemsUpdatedOptions = [
+  { value: "yes", label: "Yes", description: "All major systems updated within 30 years" },
+  { value: "no", label: "No", description: "Some systems may be older" },
+];
+
 const landlordInsuredOptions = [
   { value: "yes", label: "Yes", description: "I currently have landlord insurance" },
   { value: "no", label: "No", description: "I don't have coverage right now" },
@@ -114,7 +141,6 @@ const LANDLORD_STEPS = [
   { id: "owner-type", label: "Type" },
   { id: "property-type", label: "Property" },
   { id: "property-details", label: "Details" },
-  { id: "units", label: "Units" },
   { id: "currently-insured", label: "Insured?" },
   { id: "coverage", label: "Coverage" },
   { id: "contact", label: "Contact" },
@@ -135,6 +161,10 @@ interface FormData {
   propertyOwner: string;
   policyName: string;
   unitCount: string;
+  renterType: string;
+  rentalDuration: string;
+  roofLastUpdated: string;
+  systemsUpdated: string;
   // Shared
   currentlyInsured: string;
   coverage: string;
@@ -163,6 +193,10 @@ const Quote = () => {
     propertyOwner: "",
     policyName: "",
     unitCount: "",
+    renterType: "",
+    rentalDuration: "",
+    roofLastUpdated: "",
+    systemsUpdated: "",
     currentlyInsured: "",
     coverage: "",
     creditConsent: false,
@@ -178,9 +212,11 @@ const Quote = () => {
 
   const flow = formData.ownerType;
   const steps = flow === "tenant" ? TENANT_STEPS : flow === "landlord" ? LANDLORD_STEPS : [{ id: "owner-type", label: "Type" }];
-
-  // Get the current step ID based on flow
   const currentStepId = steps[currentStep]?.id || "owner-type";
+
+  // Get visible fields for current property type
+  const visibleFields = fieldVisibility[formData.propertyType] || [];
+  const isFieldVisible = (field: string) => visibleFields.includes(field);
 
   const canProceed = (): boolean => {
     switch (currentStepId) {
@@ -189,10 +225,12 @@ const Quote = () => {
       case "discounts": return !!formData.discount;
       case "coverage": return !!formData.coverage;
       case "property-type": return !!formData.propertyType;
-      case "property-details": return !!formData.yearBuilt && !!formData.constructionType && !!formData.buildingSize && !!formData.propertyOwner && !!formData.policyName;
-      case "units": return !!formData.unitCount;
+      case "property-details": {
+        const required = visibleFields.filter(f => f !== "roofLastUpdated"); // roofLastUpdated is optional (can be N/A)
+        return required.every(f => !!(formData as any)[f]);
+      }
       case "contact": return !!formData.firstName && !!formData.email;
-      case "share-quote": return true; // always optional
+      case "share-quote": return true;
       default: return false;
     }
   };
@@ -202,7 +240,6 @@ const Quote = () => {
   };
   const handleBack = () => {
     if (currentStep > 0) {
-      // If going back from step 1 (after owner type), reset to owner selection
       if (currentStep === 1) {
         setCurrentStep(0);
         setFormData((prev) => ({ ...prev, ownerType: "" }));
@@ -438,112 +475,207 @@ const Quote = () => {
             </div>
 
             {/* Year Built */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-accent" /> Year Built
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {yearBuiltOptions.map((opt) => (
-                  <SelectionCard
-                    key={opt.value}
-                    selected={formData.yearBuilt === opt.value}
-                    onClick={() => updateField("yearBuilt", opt.value)}
-                    label={opt.label}
-                  />
-                ))}
+            {isFieldVisible("yearBuilt") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-accent" /> Year Built
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {yearBuiltOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.yearBuilt === opt.value}
+                      onClick={() => updateField("yearBuilt", opt.value)}
+                      label={opt.label}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Construction Type */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-accent" /> Construction Type
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {constructionTypes.map((opt) => (
-                  <SelectionCard
-                    key={opt.value}
-                    selected={formData.constructionType === opt.value}
-                    onClick={() => updateField("constructionType", opt.value)}
-                    label={opt.label}
-                  />
-                ))}
+            {isFieldVisible("constructionType") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-accent" /> Construction Type
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {constructionTypes.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.constructionType === opt.value}
+                      onClick={() => updateField("constructionType", opt.value)}
+                      label={opt.label}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Building Size */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                <Layers className="w-5 h-5 text-accent" /> Building Size
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {buildingSizeOptions.map((opt) => (
-                  <SelectionCard
-                    key={opt.value}
-                    selected={formData.buildingSize === opt.value}
-                    onClick={() => updateField("buildingSize", opt.value)}
-                    label={opt.label}
-                  />
-                ))}
+            {/* Building Size / Unit Size */}
+            {isFieldVisible("buildingSize") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-accent" /> {formData.propertyType === "condo" ? "Unit Size" : "Building Size"}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {buildingSizeOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.buildingSize === opt.value}
+                      onClick={() => updateField("buildingSize", opt.value)}
+                      label={opt.label}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Unit Count */}
+            {isFieldVisible("unitCount") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-accent" /> How many rental units?
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {unitCountOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.unitCount === opt.value}
+                      onClick={() => updateField("unitCount", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Property Owner */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                <Users className="w-5 h-5 text-accent" /> Who owns the property?
-              </h3>
-              <div className="space-y-2">
-                {propertyOwnerOptions.map((opt) => (
-                  <SelectionCard
-                    key={opt.value}
-                    selected={formData.propertyOwner === opt.value}
-                    onClick={() => updateField("propertyOwner", opt.value)}
-                    label={opt.label}
-                    description={opt.description}
-                  />
-                ))}
+            {isFieldVisible("propertyOwner") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Users className="w-5 h-5 text-accent" /> Who owns the property?
+                </h3>
+                <div className="space-y-2">
+                  {propertyOwnerOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.propertyOwner === opt.value}
+                      onClick={() => updateField("propertyOwner", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Policy Name */}
-            <div className="space-y-3">
-              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                <Tag className="w-5 h-5 text-accent" /> Whose name will be on the policy?
-              </h3>
-              <div className="space-y-2">
-                {policyNameOptions.map((opt) => (
-                  <SelectionCard
-                    key={opt.value}
-                    selected={formData.policyName === opt.value}
-                    onClick={() => updateField("policyName", opt.value)}
-                    label={opt.label}
-                    description={opt.description}
-                  />
-                ))}
+            {isFieldVisible("policyName") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-accent" /> Whose name will be on the policy?
+                </h3>
+                <div className="space-y-2">
+                  {policyNameOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.policyName === opt.value}
+                      onClick={() => updateField("policyName", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        );
+            )}
 
-      case "units":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl md:text-3xl mb-2">How many rental units?</h2>
-              <p className="text-muted-foreground">Select the number of units at this property.</p>
-            </div>
-            <div className="space-y-3">
-              {unitCountOptions.map((opt) => (
-                <SelectionCard
-                  key={opt.value}
-                  selected={formData.unitCount === opt.value}
-                  onClick={() => updateField("unitCount", opt.value)}
-                  label={opt.label}
-                  description={opt.description}
+            {/* Renter Type */}
+            {isFieldVisible("renterType") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <User className="w-5 h-5 text-accent" /> Who rents the property?
+                </h3>
+                <div className="space-y-2">
+                  {renterTypeOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.renterType === opt.value}
+                      onClick={() => updateField("renterType", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Rental Duration */}
+            {isFieldVisible("rentalDuration") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-accent" /> How long do tenants rent for?
+                </h3>
+                <div className="space-y-2">
+                  {rentalDurationOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.rentalDuration === opt.value}
+                      onClick={() => updateField("rentalDuration", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Roof Last Updated (Condo only) */}
+            {isFieldVisible("roofLastUpdated") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-accent" /> When was the roof last updated?
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="text-muted-foreground hover:text-foreground">
+                        <HelpCircle className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Not sure? Please fill in N/A</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </h3>
+                <input
+                  type="text"
+                  value={formData.roofLastUpdated}
+                  onChange={(e) => updateField("roofLastUpdated", e.target.value)}
+                  placeholder="e.g. 2018 or N/A"
+                  className="w-full h-12 px-4 rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Electrical / Plumbing / Heating Updated (Apartment only) */}
+            {isFieldVisible("systemsUpdated") && (
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-accent" /> Electrical, plumbing, heating fully updated within 30 years?
+                </h3>
+                <div className="space-y-2">
+                  {systemsUpdatedOptions.map((opt) => (
+                    <SelectionCard
+                      key={opt.value}
+                      selected={formData.systemsUpdated === opt.value}
+                      onClick={() => updateField("systemsUpdated", opt.value)}
+                      label={opt.label}
+                      description={opt.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -666,7 +798,6 @@ const Quote = () => {
     }
   };
 
-  // Don't show progress/nav for homeowner coming-soon
   const isHomeowner = formData.ownerType === "homeowner";
 
   return (
@@ -675,10 +806,8 @@ const Quote = () => {
       <main className="flex-1">
         <div className="container py-12 md:py-20">
           <div className="max-w-2xl mx-auto">
-            {/* Progress bar */}
             {!isHomeowner && <QuoteProgressBar steps={steps} currentStep={currentStep} />}
 
-            {/* Address badge */}
             {address && !isHomeowner && (
               <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2.5">
                 <Home className="h-4 w-4 text-accent" />
@@ -686,10 +815,8 @@ const Quote = () => {
               </div>
             )}
 
-            {/* Step content */}
             <div className="animate-fade-in-up">{renderStep()}</div>
 
-            {/* Navigation */}
             {!isHomeowner && (
               <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
                 <Button

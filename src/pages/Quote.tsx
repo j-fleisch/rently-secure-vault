@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar, Layers, Users, Tag, Plus, X, Mail, HelpCircle, Wrench, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone, Building2, Calendar as CalendarIcon, Layers, Users, Tag, Plus, X, Mail, HelpCircle, Wrench, Clock, CalendarDays } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SelectionCard from "@/components/quote/SelectionCard";
@@ -168,6 +172,7 @@ interface FormData {
   // Shared
   currentlyInsured: string;
   coverage: string;
+  coverageStartDate: Date | null;
   creditConsent: boolean;
   firstName: string;
   lastName: string;
@@ -199,6 +204,7 @@ const Quote = () => {
     systemsUpdated: "",
     currentlyInsured: "",
     coverage: "",
+    coverageStartDate: null,
     creditConsent: false,
     firstName: "",
     lastName: "",
@@ -223,7 +229,7 @@ const Quote = () => {
       case "owner-type": return !!formData.ownerType;
       case "currently-insured": return !!formData.currentlyInsured;
       case "discounts": return !!formData.discount;
-      case "coverage": return !!formData.coverage;
+      case "coverage": return !!formData.coverage && !!formData.coverageStartDate;
       case "property-type": return !!formData.propertyType;
       case "property-details": {
         const required = visibleFields.filter(f => f !== "roofLastUpdated"); // roofLastUpdated is optional (can be N/A)
@@ -417,6 +423,41 @@ const Quote = () => {
               ))}
             </div>
 
+            {/* Coverage Start Date */}
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-accent" /> When do you need coverage to start? *
+              </h3>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-12 justify-start text-left font-normal",
+                      !formData.coverageStartDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {formData.coverageStartDate
+                      ? format(formData.coverageStartDate, "PPP")
+                      : "Select a future date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.coverageStartDate || undefined}
+                    onSelect={(date) =>
+                      setFormData((prev) => ({ ...prev, coverageStartDate: date || null }))
+                    }
+                    disabled={(date) => date <= new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             {/* Credit consent box */}
             <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
               <h3 className="font-semibold text-foreground">You could save more on your insurance!</h3>
@@ -478,7 +519,7 @@ const Quote = () => {
             {isFieldVisible("yearBuilt") && (
               <div className="space-y-3">
                 <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-accent" /> Year Built
+                  <CalendarIcon className="w-5 h-5 text-accent" /> Year Built
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {yearBuiltOptions.map((opt) => (

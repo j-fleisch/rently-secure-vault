@@ -49,8 +49,8 @@ const landlordPropertyTypes = [
 // Field visibility per property type
 const fieldVisibility: Record<string, string[]> = {
   house:      ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
-  condo:      ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "renterType", "rentalDuration", "roofLastUpdated"],
-  apartment:  ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "renterType", "rentalDuration", "systemsUpdated"],
+  condo:      ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "renterType", "rentalDuration"],
+  apartment:  ["yearBuilt", "buildingSize", "propertyOwner", "policyName", "roofLastUpdated", "systemsUpdated"],
   townhouse:  ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
   "multi-unit": ["yearBuilt", "constructionType", "buildingSize", "unitCount", "propertyOwner", "policyName", "renterType", "rentalDuration"],
   commercial: ["yearBuilt", "constructionType", "buildingSize", "unitCount", "renterType", "rentalDuration"],

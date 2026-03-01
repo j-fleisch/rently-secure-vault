@@ -38,7 +38,8 @@ const tenantCoverageOptions = [
 // ── Landlord-specific data ──
 const landlordPropertyTypes = [
   { value: "house", label: "House" },
-  { value: "condo", label: "Condo / Apartment" },
+  { value: "condo", label: "Condominium" },
+  { value: "apartment", label: "Apartment" },
   { value: "townhouse", label: "Townhouse" },
   { value: "multi-unit", label: "Multi-Unit (2-4)" },
   { value: "commercial", label: "Commercial / Mixed Use" },

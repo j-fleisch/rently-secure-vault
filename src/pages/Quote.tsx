@@ -438,8 +438,8 @@ const Quote = () => {
 
             {/* Year Built */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-accent" /> Year Built
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-accent" /> Year Built
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {yearBuiltOptions.map((opt) => (
@@ -455,8 +455,8 @@ const Quote = () => {
 
             {/* Construction Type */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-accent" /> Construction Type
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-accent" /> Construction Type
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {constructionTypes.map((opt) => (
@@ -472,8 +472,8 @@ const Quote = () => {
 
             {/* Building Size */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Layers className="w-4 h-4 text-accent" /> Building Size
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <Layers className="w-5 h-5 text-accent" /> Building Size
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 {buildingSizeOptions.map((opt) => (
@@ -489,8 +489,8 @@ const Quote = () => {
 
             {/* Property Owner */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Users className="w-4 h-4 text-accent" /> Who owns the property?
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <Users className="w-5 h-5 text-accent" /> Who owns the property?
               </h3>
               <div className="space-y-2">
                 {propertyOwnerOptions.map((opt) => (
@@ -507,8 +507,8 @@ const Quote = () => {
 
             {/* Policy Name */}
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Tag className="w-4 h-4 text-accent" /> Whose name will be on the policy?
+              <h3 className="text-base font-semibold tracking-wide text-foreground flex items-center gap-2">
+                <Tag className="w-5 h-5 text-accent" /> Whose name will be on the policy?
               </h3>
               <div className="space-y-2">
                 {policyNameOptions.map((opt) => (

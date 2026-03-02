@@ -29,7 +29,7 @@ const AddressAutocomplete = ({
   const requestIdRef = useRef(0);
 
   useEffect(() => {
-    const apiKey = "AIzaSyD9xwpFwqvZlEA-R6hdNJK4xNWMK9IF7Po";
+    const apiKey = "AIzaSyCmtNVgYmstxG0C95-mRle8zPmmjOz-EWM";
 
     const initPlaces = () => {
       const places = (window as any).google?.maps?.places;

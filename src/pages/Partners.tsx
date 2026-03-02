@@ -58,7 +58,7 @@ const Partners = () => {
         <section className="py-20 md:py-28 bg-card">
           <div className="container max-w-3xl text-center space-y-6">
             <span className="inline-block text-xs font-bold tracking-[0.2em] text-primary uppercase bg-primary/10 px-3 py-1 rounded-full">
-              Partner Programme
+              Partner Program
             </span>
             <h1 className="text-4xl md:text-5xl">
               Grow your business with Cedar
@@ -70,8 +70,8 @@ const Partners = () => {
               <Button variant="hero" size="lg" asChild>
                 <a href="#become-a-partner">Become a Partner</a>
               </Button>
-              <Button variant="hero-outline" size="lg" asChild>
-                <Link to="/quote">Get a Quote</Link>
+              <Button variant="hero-outline" size="lg">
+                Login
               </Button>
             </div>
           </div>

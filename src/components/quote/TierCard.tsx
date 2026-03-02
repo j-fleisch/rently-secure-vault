@@ -32,12 +32,18 @@ const TierCard = ({ tier, price, features, recommended, selected, onSelect }: Ti
     </div>
     <p className="text-xs text-muted-foreground mb-1">${Math.round(price / 12)}/month</p>
     <div className="border-t border-border mt-4 pt-4 space-y-3">
-      {features.map((f, i) => (
-        <div key={i} className="flex items-start gap-2">
-          <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-accent" />
-          <span className="text-sm text-foreground">{f}</span>
-        </div>
-      ))}
+      {features.map((f, i) => {
+        const [text, hint] = f.split("|");
+        return (
+          <div key={i} className="flex items-start gap-2">
+            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-accent" />
+            <span className="text-sm text-foreground">
+              {text}
+              {hint && <span className="text-xs text-muted-foreground ml-1">({hint})</span>}
+            </span>
+          </div>
+        );
+      })}
     </div>
     <button
       onClick={(e) => { e.stopPropagation(); onSelect(); }}

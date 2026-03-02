@@ -66,7 +66,7 @@ export const COVERAGE_TIERS: TierInfo[] = [
     recommended: false,
     features: (rc) => [
       `Dwelling: $${(rc || 400000).toLocaleString()}`,
-      "Liability: $1,000,000",
+      "Liability: $1,000,000|recommended",
       "Loss of rent: 12 months",
       "Named perils",
     ],
@@ -77,7 +77,7 @@ export const COVERAGE_TIERS: TierInfo[] = [
     recommended: true,
     features: (rc) => [
       `Dwelling: $${(rc || 400000).toLocaleString()}`,
-      "Liability: $2,000,000",
+      "Liability: $2,000,000|recommended",
       "Loss of rent: 18 months",
       "Broad form",
       "Sewer backup: $50K",
@@ -90,7 +90,7 @@ export const COVERAGE_TIERS: TierInfo[] = [
     recommended: false,
     features: (rc) => [
       `Dwelling: $${(rc || 400000).toLocaleString()}`,
-      "Liability: $5,000,000",
+      "Liability: $5,000,000|recommended",
       "Loss of rent: 24 months",
       "All-risk coverage",
       "Sewer backup: $100K",

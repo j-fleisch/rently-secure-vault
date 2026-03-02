@@ -23,7 +23,6 @@ const AddressAutocomplete = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
-  const autocompleteSuggestionRef = useRef<any>(null);
   const autocompleteServiceRef = useRef<any>(null);
   const sessionTokenRef = useRef<any>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -32,63 +31,42 @@ const AddressAutocomplete = ({
   useEffect(() => {
     const apiKey = "AIzaSyD9xwpFwqvZlEA-R6hdNJK4xNWMK9IF7Po";
 
-    const initPlaces = async () => {
-      if (!(window as any).google?.maps) return;
-      const placesLib = await (window as any).google.maps.importLibrary("places");
+    const initPlaces = () => {
+      const places = (window as any).google?.maps?.places;
+      if (!places) return;
 
-      if (placesLib?.AutocompleteSuggestion) {
-        autocompleteSuggestionRef.current = placesLib.AutocompleteSuggestion;
-      } else if ((window as any).google?.maps?.places?.AutocompleteService) {
-        autocompleteServiceRef.current = new (window as any).google.maps.places.AutocompleteService();
+      if (places.AutocompleteService) {
+        autocompleteServiceRef.current = new places.AutocompleteService();
       }
-
-      if (placesLib?.AutocompleteSessionToken) {
-        sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
-      } else if ((window as any).google?.maps?.places?.AutocompleteSessionToken) {
-        sessionTokenRef.current = new (window as any).google.maps.places.AutocompleteSessionToken();
+      if (places.AutocompleteSessionToken) {
+        sessionTokenRef.current = new places.AutocompleteSessionToken();
       }
     };
 
-    if ((window as any).google?.maps?.importLibrary) {
+    // Already loaded (e.g. HMR or duplicate mount)
+    if ((window as any).google?.maps?.places) {
       initPlaces();
       return;
     }
 
+    // Prevent duplicate script tags
+    if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) {
+      const waitForGoogle = setInterval(() => {
+        if ((window as any).google?.maps?.places) {
+          clearInterval(waitForGoogle);
+          initPlaces();
+        }
+      }, 100);
+      return () => clearInterval(waitForGoogle);
+    }
+
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      initPlaces();
-    };
+    script.onload = () => initPlaces();
     document.head.appendChild(script);
   }, []);
-
-  const normalizeSuggestion = (rawSuggestion: any): SuggestionItem | null => {
-    const placePrediction = rawSuggestion?.placePrediction;
-    if (!placePrediction) return null;
-
-    const mainText =
-      placePrediction?.structuredFormat?.mainText?.text ||
-      placePrediction?.text?.text ||
-      "";
-
-    const secondaryText =
-      placePrediction?.structuredFormat?.secondaryText?.text || "";
-
-    const description =
-      typeof placePrediction?.text?.toString === "function"
-        ? placePrediction.text.toString()
-        : [mainText, secondaryText].filter(Boolean).join(", ");
-
-    return {
-      placeId: placePrediction?.placeId || description,
-      mainText: mainText || description,
-      secondaryText,
-      description,
-      matchedSubstrings: placePrediction?.structuredFormat?.mainText?.matches,
-    };
-  };
 
   const normalizeLegacySuggestion = (rawPrediction: any): SuggestionItem | null => {
     if (!rawPrediction) return null;
@@ -123,24 +101,6 @@ const AddressAutocomplete = ({
     const currentRequestId = ++requestIdRef.current;
 
     try {
-      if (autocompleteSuggestionRef.current) {
-        const result = await autocompleteSuggestionRef.current.fetchAutocompleteSuggestions({
-          input,
-          includedRegionCodes: ["ca"],
-          sessionToken: sessionTokenRef.current,
-        });
-
-        if (currentRequestId !== requestIdRef.current) return;
-
-        const nextPredictions = (result?.suggestions || [])
-          .map(normalizeSuggestion)
-          .filter(Boolean) as SuggestionItem[];
-
-        setPredictions(nextPredictions);
-        setIsOpen(nextPredictions.length > 0);
-        return;
-      }
-
       if (autocompleteServiceRef.current) {
         const result = await new Promise<any[]>((resolve, reject) => {
           autocompleteServiceRef.current.getPlacePredictions(

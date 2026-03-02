@@ -523,9 +523,13 @@ const Quote = () => {
               <label className="block text-sm font-semibold text-foreground mb-1">Monthly Rental Income (all units)</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</div>
-                <input type="number" value={formData.rentalIncome}
-                  onChange={(e) => updateField("rentalIncome", e.target.value)}
-                  placeholder="e.g. 3200"
+                <input type="text" inputMode="numeric"
+                  value={formData.rentalIncome ? parseInt(formData.rentalIncome).toLocaleString() : ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, "");
+                    updateField("rentalIncome", raw);
+                  }}
+                  placeholder="e.g. 3,200"
                   className={cn(inputClass, "pl-8")} />
               </div>
             </div>
@@ -571,6 +575,27 @@ const Quote = () => {
                 <option value="5000000">$5,000,000</option>
               </select>
             </div>
+
+            {/* Coverage Start Date */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-accent" /> When do you need coverage to start?
+              </h3>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline"
+                    className={cn("w-full h-12 justify-start text-left font-normal", !formData.coverageStartDate && "text-muted-foreground")}>
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {formData.coverageStartDate ? format(formData.coverageStartDate, "PPP") : "Select a future date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={formData.coverageStartDate || undefined}
+                    onSelect={(date) => setFormData((prev) => ({ ...prev, coverageStartDate: date || null }))}
+                    disabled={(date) => date <= new Date()} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         );
 
@@ -611,9 +636,9 @@ const Quote = () => {
                     Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
                   </p>
                   <p className="text-2xl font-extrabold text-accent">
-                    ${premiums[formData.selectedPlan as keyof PremiumTiers].toLocaleString()}/yr
+                    ${Math.round(premiums[formData.selectedPlan as keyof PremiumTiers] / 12).toLocaleString()}/mo
                     <span className="text-sm font-normal text-accent/60 ml-2">
-                      (${Math.round(premiums[formData.selectedPlan as keyof PremiumTiers] / 12)}/mo)
+                      (${premiums[formData.selectedPlan as keyof PremiumTiers].toLocaleString()}/yr)
                     </span>
                   </p>
                 </div>

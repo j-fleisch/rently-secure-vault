@@ -27,10 +27,10 @@ const TierCard = ({ tier, price, features, recommended, selected, onSelect }: Ti
     )}
     <h3 className="text-lg font-bold text-foreground">{tier}</h3>
     <div className="my-4">
-      <span className="text-3xl font-extrabold text-accent">${price.toLocaleString()}</span>
-      <span className="text-sm text-muted-foreground">/year</span>
+      <span className="text-3xl font-extrabold text-accent">${Math.round(price / 12).toLocaleString()}</span>
+      <span className="text-sm text-muted-foreground">/month</span>
     </div>
-    <p className="text-xs text-muted-foreground mb-1">${Math.round(price / 12)}/month</p>
+    <p className="text-xs text-muted-foreground mb-1">${price.toLocaleString()}/year</p>
     <div className="border-t border-border mt-4 pt-4 space-y-3">
       {features.map((f, i) => {
         const [text, hint] = f.split("|");

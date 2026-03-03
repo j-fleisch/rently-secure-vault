@@ -10,7 +10,7 @@ const Navbar = () => {
     { label: "Landlords", href: "#landlords" },
     { label: "Tenants", href: "#tenants" },
     { label: "Partners", href: "/partners", isRoute: true },
-    { label: "Claims", href: "#claims" },
+    { label: "Claims", href: "/claims", isRoute: true },
     { label: "Support", href: "#support" },
   ];
 

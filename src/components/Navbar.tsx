@@ -7,7 +7,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { label: "Landlords", href: "#landlords" },
+    { label: "Landlords", href: "/landlords", isRoute: true },
     { label: "Tenants", href: "#tenants" },
     { label: "Partners", href: "/partners", isRoute: true },
     { label: "Claims", href: "/claims", isRoute: true },

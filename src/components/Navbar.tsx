@@ -8,7 +8,7 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Landlords", href: "/landlords", isRoute: true },
-    { label: "Tenants", href: "#tenants" },
+    { label: "Tenants", href: "/tenants", isRoute: true },
     { label: "Partners", href: "/partners", isRoute: true },
     { label: "Claims", href: "/claims", isRoute: true },
     { label: "Support", href: "#support" },

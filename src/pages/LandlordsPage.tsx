@@ -162,7 +162,7 @@ function QuickEstimate({ onGetQuote }: { onGetQuote: () => void }) {
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-foreground">Quick Estimate</h3>
+            <h3 className="font-bold text-foreground">Insurance Estimate</h3>
             <p className="text-xs text-muted-foreground">4 questions. 10 seconds. Ballpark premium.</p>
           </div>
         </div>
@@ -210,9 +210,9 @@ function QuickEstimate({ onGetQuote }: { onGetQuote: () => void }) {
           <p className="text-xs text-muted-foreground mb-2">What it would cost to rebuild — typically 50-70% of market value.</p>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</div>
-            <input type="number" value={inputs.replacementCost}
-              onChange={(e) => update("replacementCost", e.target.value)}
-              placeholder="e.g. 400000"
+            <input type="text" value={inputs.replacementCost ? parseInt(inputs.replacementCost as string).toLocaleString() : ""}
+              onChange={(e) => update("replacementCost", e.target.value.replace(/,/g, ""))}
+              placeholder="e.g. 400,000"
               className="w-full pl-8 pr-4 py-3 rounded-lg border-2 border-border bg-background text-foreground outline-none focus:border-accent transition-colors" />
           </div>
           <div className="flex gap-2 mt-2">
@@ -272,18 +272,18 @@ function QuickEstimate({ onGetQuote }: { onGetQuote: () => void }) {
       {/* Result */}
       {result && (
         <div className="border-t-2 border-border bg-accent/5 p-6">
-          <p className="text-sm text-muted-foreground mb-3 text-center">Your estimated annual premium</p>
+          <p className="text-sm text-muted-foreground mb-3 text-center">Your estimated premium</p>
           <div className="text-center mb-4">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-lg text-muted-foreground">${result.low.toLocaleString()}</span>
-              <span className="text-muted-foreground mx-2">—</span>
-              <span className="text-4xl font-extrabold text-accent">${result.mid.toLocaleString()}</span>
-              <span className="text-muted-foreground mx-2">—</span>
-              <span className="text-lg text-muted-foreground">${result.high.toLocaleString()}</span>
+              <span className="text-4xl font-extrabold text-accent">
+                ${Math.round(result.mid / 12).toLocaleString()}/mo
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              ${Math.round(result.low / 12)} – ${Math.round(result.high / 12)}/month
-            </p>
+            <div className="flex items-baseline justify-center gap-1 mt-2">
+              <span className="text-sm text-muted-foreground">
+                ${result.low.toLocaleString()} – ${result.high.toLocaleString()}/year
+              </span>
+            </div>
           </div>
           <div className="bg-card border border-border rounded-lg p-3 mb-4">
             <p className="text-xs text-muted-foreground text-center">

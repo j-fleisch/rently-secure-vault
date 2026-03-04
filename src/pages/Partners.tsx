@@ -20,7 +20,7 @@ const PARTNER_TYPES = [
       "Revenue share on every policy originated through your channel",
       "Dedicated API for deep integration into your LOS",
     ],
-    volume: "500+ mortgages/year",
+    volume: "",
     commission: "",
     integration: "API or widget embed",
   },
@@ -36,7 +36,7 @@ const PARTNER_TYPES = [
       "Pre-fill quotes using mortgage application data your client already provided",
       "White-glove support for your high-value clients",
     ],
-    volume: "Any volume",
+    volume: "",
     commission: "",
     integration: "Referral link or widget",
   },
@@ -52,7 +52,7 @@ const PARTNER_TYPES = [
       "Personalized landing page with your branding",
       "Works for both purchase and portfolio insurance reviews",
     ],
-    volume: "Any volume",
+    volume: "",
     commission: "",
     integration: "Referral link",
   },
@@ -68,7 +68,7 @@ const PARTNER_TYPES = [
       "Instant certificates of insurance for tenant and owner requests",
       "Revenue share plus reduced E&O exposure for your firm",
     ],
-    volume: "50+ doors managed",
+    volume: "",
     commission: "",
     integration: "API, widget, or bulk upload",
   },
@@ -268,11 +268,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                         </div>
                       ))}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 bg-muted/30 rounded-xl p-4 mb-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Min. Volume</p>
-                        <p className="text-sm font-semibold text-foreground">{pt.volume}</p>
-                      </div>
+                    <div className="bg-muted/30 rounded-xl p-4 mb-4">
                       <div>
                         <p className="text-xs text-muted-foreground">Integration</p>
                         <p className="text-sm font-semibold text-foreground">{pt.integration}</p>

@@ -21,7 +21,7 @@ const PARTNER_TYPES = [
       "Dedicated API for deep integration into your LOS",
     ],
     volume: "500+ mortgages/year",
-    commission: "Up to 20%",
+    commission: "",
     integration: "API or widget embed",
   },
   {
@@ -37,7 +37,7 @@ const PARTNER_TYPES = [
       "White-glove support for your high-value clients",
     ],
     volume: "Any volume",
-    commission: "Up to 15%",
+    commission: "",
     integration: "Referral link or widget",
   },
   {
@@ -53,7 +53,7 @@ const PARTNER_TYPES = [
       "Works for both purchase and portfolio insurance reviews",
     ],
     volume: "Any volume",
-    commission: "Up to 12%",
+    commission: "",
     integration: "Referral link",
   },
   {
@@ -69,7 +69,7 @@ const PARTNER_TYPES = [
       "Revenue share plus reduced E&O exposure for your firm",
     ],
     volume: "50+ doors managed",
-    commission: "Up to 18%",
+    commission: "",
     integration: "API, widget, or bulk upload",
   },
 ];
@@ -198,7 +198,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">Partner with Cedar</h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Earn recurring revenue by embedding landlord insurance into your existing client relationships. Your clients already need it — be the one who delivers it.
+            Earn additional revenue by embedding landlord insurance into your existing client relationships. Your clients already need it — be the one who delivers it.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <button onClick={onApply}
@@ -218,7 +218,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
               { num: "$2.4M+", label: "Partner-originated GWP" },
               { num: "85%+", label: "Client retention rate" },
               { num: "180+", label: "Active partners" },
-              { num: "15-20%", label: "Referral commission" },
+              { num: "2%-5%", label: "Referral commission" },
             ].map((s, i) => (
               <div key={i} className="text-center">
                 <p className="text-2xl font-extrabold text-accent">{s.num}</p>
@@ -252,7 +252,6 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                     <ChevronUp className="w-5 h-5 text-muted-foreground" />
                   ) : (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">Commission: <span className="font-semibold text-accent">{pt.commission}</span></span>
                       <ChevronDown className="w-5 h-5 text-muted-foreground" />
                     </div>
                   )}
@@ -269,14 +268,10 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                         </div>
                       ))}
                     </div>
-                    <div className="grid grid-cols-3 gap-4 bg-muted/30 rounded-xl p-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4 bg-muted/30 rounded-xl p-4 mb-4">
                       <div>
                         <p className="text-xs text-muted-foreground">Min. Volume</p>
                         <p className="text-sm font-semibold text-foreground">{pt.volume}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Commission</p>
-                        <p className="text-sm font-semibold text-accent">{pt.commission}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Integration</p>

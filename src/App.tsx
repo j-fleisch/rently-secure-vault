@@ -9,6 +9,7 @@ import Partners from "./pages/Partners";
 import Claims from "./pages/Claims";
 import LandlordsPage from "./pages/LandlordsPage";
 import TenantsPage from "./pages/TenantsPage";
+import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/claims" element={<Claims />} />
           <Route path="/landlords" element={<LandlordsPage />} />
           <Route path="/tenants" element={<TenantsPage />} />
+          <Route path="/support" element={<SupportPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

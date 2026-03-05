@@ -11,7 +11,7 @@ const Navbar = () => {
     { label: "Tenants", href: "/tenants", isRoute: true },
     { label: "Partners", href: "/partners", isRoute: true },
     { label: "Claims", href: "/claims", isRoute: true },
-    { label: "Support", href: "#support" },
+    { label: "Support", href: "/support", isRoute: true },
   ];
 
   return (

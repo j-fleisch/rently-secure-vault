@@ -594,11 +594,11 @@ export default function TenantsPage() {
                 </span>
                 <div className="space-y-3 mt-2">
                   <div>
-                    <p className="text-xs font-semibold text-destructive mb-1">Without tenant insurance:</p>
-                    <p className="text-sm text-muted-foreground">{s.without}</p>
+                    <p className="text-sm font-bold text-destructive mb-1">Without tenant insurance:</p>
+                    <p className="text-sm text-foreground">{s.without}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-accent mb-1">With Cedar:</p>
+                    <p className="text-sm font-bold text-accent mb-1">With Cedar:</p>
                     <p className="text-sm text-foreground">{s.with}</p>
                   </div>
                 </div>

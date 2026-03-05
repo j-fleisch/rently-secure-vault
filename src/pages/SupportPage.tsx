@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // ═══ HELP CATEGORIES ═══
 const HELP_TOPICS = [
@@ -375,31 +377,7 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4 border-b border-border sticky top-0 bg-background z-20">
-        <div className="text-xl font-extrabold tracking-[0.3em] text-accent cursor-pointer"
-          onClick={() => { window.location.href = "/"; }}>CEDAR</div>
-        <nav className="flex gap-7">
-          {[
-            { label: "Landlords", href: "/landlords" },
-            { label: "Tenants", href: "/tenants" },
-            { label: "Partners", href: "/partners" },
-            { label: "Claims", href: "/claims" },
-            { label: "Support", href: "/support" },
-          ].map((n) => (
-            <a key={n.label} href={n.href}
-              className={`text-sm font-medium cursor-pointer transition-colors ${
-                n.label === "Support" ? "text-accent" : "text-foreground hover:text-accent"
-              }`}>{n.label}</a>
-          ))}
-        </nav>
-        <div className="flex gap-3 items-center">
-          <span className="text-sm font-medium text-foreground cursor-pointer">Login</span>
-          <button onClick={() => { window.location.href = "/quote"; }}
-            className="bg-accent text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent/90 transition-colors">
-            Get a Quote
-          </button>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero */}
       <section className="text-center py-12 px-5 max-w-4xl mx-auto">
@@ -551,16 +529,7 @@ export default function SupportPage() {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-8">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="text-sm font-extrabold tracking-[0.3em] text-accent">CEDAR</div>
-          <p className="text-xs text-muted-foreground">
-            Cedar Insurance is a managing general agency. Coverage is underwritten by A-rated Canadian carriers.
-            Available in Ontario. Terms and conditions apply.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

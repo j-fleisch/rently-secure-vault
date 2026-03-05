@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { NotificationBell, RenewalManagement, PortfolioView, MaintenanceLog, ReferralProgram } from "@/components/PortalFeatures";
+import { useAuth } from "@/hooks/useAuth";
 
 // ═══ MOCK DATA ═══
 const MOCK_USER = {
@@ -735,9 +737,13 @@ export default function ClientPortal() {
   const [dashboardTab, setDashboardTab] = useState<"policies" | "portfolio" | "maintenance" | "referrals">("policies");
   const [showRenewal, setShowRenewal] = useState(false);
 
-  const handleLogout = useCallback(() => {
-    window.location.href = "/";
-  }, []);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = useCallback(async () => {
+    await signOut();
+    navigate("/");
+  }, [signOut, navigate]);
 
   const PortalHeader = () => (
     <header className="flex items-center justify-between px-8 py-4 border-b border-border sticky top-0 bg-background z-20">

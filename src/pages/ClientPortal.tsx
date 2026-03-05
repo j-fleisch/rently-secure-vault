@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { NotificationBell, RenewalManagement, PortfolioView, MaintenanceLog, ReferralProgram } from "@/components/PortalFeatures";
 
 // ═══ MOCK DATA ═══
 const MOCK_USER = {
@@ -731,212 +732,220 @@ export default function ClientPortal() {
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [sharePolicy, setSharePolicy] = useState<any>(null);
   const [addCoveragePolicy, setAddCoveragePolicy] = useState<any>(null);
+  const [dashboardTab, setDashboardTab] = useState<"policies" | "portfolio" | "maintenance" | "referrals">("policies");
+  const [showRenewal, setShowRenewal] = useState(false);
 
   const handleLogout = useCallback(() => {
     window.location.href = "/";
   }, []);
 
-  // Dashboard view
-  if (!selectedPolicy) {
+  const PortalHeader = () => (
+    <header className="flex items-center justify-between px-8 py-4 border-b border-border sticky top-0 bg-background z-20">
+      <div className="text-xl font-extrabold tracking-[0.3em] text-accent cursor-pointer"
+        onClick={() => { window.location.href = "/"; }}>CEDAR</div>
+      <div className="flex items-center gap-4">
+        <NotificationBell />
+        <div className="text-right">
+          <p className="text-sm font-semibold text-foreground">{MOCK_USER.firstName} {MOCK_USER.lastName}</p>
+          <p className="text-xs text-muted-foreground">{MOCK_USER.email}</p>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+          <span className="text-sm font-bold text-accent">{MOCK_USER.firstName[0]}{MOCK_USER.lastName[0]}</span>
+        </div>
+        <button onClick={handleLogout}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors ml-2">
+          Log Out
+        </button>
+      </div>
+    </header>
+  );
+
+  const PortalFooter = () => (
+    <footer className="border-t border-border py-8 px-8 mt-10">
+      <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="text-sm font-extrabold tracking-[0.3em] text-accent">CEDAR</div>
+        <p className="text-xs text-muted-foreground">
+          Cedar Insurance is a managing general agency. Coverage is underwritten by A-rated Canadian carriers.
+          Available in Ontario. Terms and conditions apply.
+        </p>
+      </div>
+    </footer>
+  );
+
+  // Policy detail view
+  if (selectedPolicy) {
     return (
       <div className="min-h-screen bg-background font-sans">
-        {/* Header */}
-        <header className="flex items-center justify-between px-8 py-4 border-b border-border sticky top-0 bg-background z-20">
-          <div className="text-xl font-extrabold tracking-[0.3em] text-accent cursor-pointer"
-            onClick={() => { window.location.href = "/"; }}>CEDAR</div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-foreground">{MOCK_USER.firstName} {MOCK_USER.lastName}</p>
-              <p className="text-xs text-muted-foreground">{MOCK_USER.email}</p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-              <span className="text-sm font-bold text-accent">{MOCK_USER.firstName[0]}{MOCK_USER.lastName[0]}</span>
-            </div>
-            <button onClick={handleLogout}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors ml-2">
-              Log Out
-            </button>
-          </div>
-        </header>
-
+        <PortalHeader />
         <div className="max-w-5xl mx-auto px-5 py-10">
-          {/* Welcome */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-foreground mb-1">
-              Welcome back, {MOCK_USER.firstName}
-            </h1>
-            <p className="text-muted-foreground">Here's an overview of your insurance portfolio.</p>
-          </div>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="bg-card border-2 border-border rounded-xl p-5">
-              <p className="text-xs text-muted-foreground mb-1">Active Policies</p>
-              <p className="text-3xl font-extrabold text-accent">{MOCK_POLICIES.length}</p>
-            </div>
-            <div className="bg-card border-2 border-border rounded-xl p-5">
-              <p className="text-xs text-muted-foreground mb-1">Total Premium</p>
-              <p className="text-3xl font-extrabold text-foreground">
-                ${MOCK_POLICIES.reduce((s, p) => s + p.premium, 0).toLocaleString()}
-              </p>
-              <p className="text-xs text-muted-foreground">/year</p>
-            </div>
-            <div className="bg-card border-2 border-border rounded-xl p-5">
-              <p className="text-xs text-muted-foreground mb-1">Total Coverage</p>
-              <p className="text-3xl font-extrabold text-foreground">
-                ${(MOCK_POLICIES.reduce((s, p) => s + (p.coverages[0]?.limit || 0), 0) / 1000).toFixed(0)}K
-              </p>
-              <p className="text-xs text-muted-foreground">dwelling</p>
-            </div>
-            <div className="bg-card border-2 border-border rounded-xl p-5">
-              <p className="text-xs text-muted-foreground mb-1">Open Claims</p>
-              <p className="text-3xl font-extrabold text-foreground">
-                {MOCK_POLICIES.reduce((s, p) => s + p.claims.length, 0)}
-              </p>
-            </div>
-          </div>
-
-          {/* Policy cards */}
-          <h2 className="text-lg font-bold text-foreground mb-4">Your Policies</h2>
-          <div className="space-y-4">
-            {MOCK_POLICIES.map((policy) => {
-              const daysToRenewal = daysUntil(policy.expiryDate);
-              return (
-                <div key={policy.id}
-                  className="bg-card border-2 border-border rounded-2xl overflow-hidden hover:border-accent/30 transition-all cursor-pointer"
-                  onClick={() => setSelectedPolicy(policy)}>
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-lg font-bold text-foreground">{policy.address}</h3>
-                          <StatusBadge status={policy.status} />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {policy.id} · {policy.plan} Plan · {policy.propertyType} · {policy.units} unit{policy.units > 1 ? "s" : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-extrabold text-foreground">${Math.round(policy.premium / 12)}</p>
-                        <p className="text-xs text-muted-foreground">/month</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Dwelling</p>
-                        <p className="text-sm font-semibold text-foreground">${(policy.coverages[0]?.limit || 0).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Liability</p>
-                        <p className="text-sm font-semibold text-foreground">${((policy.coverages[1]?.limit || 0) / 1000000).toFixed(0)}M</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Renewal</p>
-                        <p className="text-sm font-semibold text-foreground">{daysToRenewal} days</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Claims</p>
-                        <p className="text-sm font-semibold text-foreground">{policy.claims.length} active</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {policy.claims.length > 0 && (
-                    <div className="border-t border-border bg-amber-50 px-6 py-3 flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
-                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                      </svg>
-                      <p className="text-xs text-amber-800 font-medium">
-                        Claim {policy.claims[0].id} ({policy.claims[0].type}) — {policy.claims[0].status}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Quick actions */}
-          <div className="mt-10">
-            <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { label: "Get Certificate", desc: "Download or email instantly", icon: "📄" },
-                { label: "File a Claim", desc: "Report an incident", icon: "🛡️", href: "/claims" },
-                { label: "Add Property", desc: "Insure another property", icon: "🏠", href: "/quote" },
-                { label: "Get Support", desc: "Contact our team", icon: "💬", href: "/support" },
-              ].map((action, i) => (
-                <a key={i} href={action.href || "#"}
-                  className="bg-card border-2 border-border rounded-2xl p-5 text-center hover:border-accent/40 hover:shadow-sm transition-all group">
-                  <div className="text-2xl mb-2">{action.icon}</div>
-                  <h3 className="font-bold text-foreground text-sm mb-1">{action.label}</h3>
-                  <p className="text-xs text-muted-foreground">{action.desc}</p>
-                </a>
-              ))}
-            </div>
-          </div>
+          <PolicyDetail
+            policy={selectedPolicy}
+            onBack={() => setSelectedPolicy(null)}
+            onShare={() => setSharePolicy(selectedPolicy)}
+            onAddCoverage={() => setAddCoveragePolicy(selectedPolicy)}
+          />
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-border py-8 px-8 mt-10">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="text-sm font-extrabold tracking-[0.3em] text-accent">CEDAR</div>
-            <p className="text-xs text-muted-foreground">
-              Cedar Insurance is a managing general agency. Coverage is underwritten by A-rated Canadian carriers.
-              Available in Ontario. Terms and conditions apply.
-            </p>
-          </div>
-        </footer>
+        {sharePolicy && <ShareModal policy={sharePolicy} onClose={() => setSharePolicy(null)} />}
+        {addCoveragePolicy && <AddCoverageModal policy={addCoveragePolicy} onClose={() => setAddCoveragePolicy(null)} />}
+        <PortalFooter />
       </div>
     );
   }
 
-  // Policy detail view
+  // Dashboard view
+  const DASHBOARD_TABS = [
+    { key: "policies" as const, label: "Policies" },
+    { key: "portfolio" as const, label: "Portfolio" },
+    { key: "maintenance" as const, label: "Maintenance" },
+    { key: "referrals" as const, label: "Referrals" },
+  ];
+
   return (
     <div className="min-h-screen bg-background font-sans">
-      {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4 border-b border-border sticky top-0 bg-background z-20">
-        <div className="text-xl font-extrabold tracking-[0.3em] text-accent cursor-pointer"
-          onClick={() => { window.location.href = "/"; }}>CEDAR</div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm font-semibold text-foreground">{MOCK_USER.firstName} {MOCK_USER.lastName}</p>
-            <p className="text-xs text-muted-foreground">{MOCK_USER.email}</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-accent">{MOCK_USER.firstName[0]}{MOCK_USER.lastName[0]}</span>
-          </div>
-          <button onClick={handleLogout}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors ml-2">
-            Log Out
-          </button>
-        </div>
-      </header>
+      <PortalHeader />
 
       <div className="max-w-5xl mx-auto px-5 py-10">
-        <PolicyDetail
-          policy={selectedPolicy}
-          onBack={() => setSelectedPolicy(null)}
-          onShare={() => setSharePolicy(selectedPolicy)}
-          onAddCoverage={() => setAddCoveragePolicy(selectedPolicy)}
-        />
+        {/* Welcome */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold text-foreground mb-1">
+            Welcome back, {MOCK_USER.firstName}
+          </h1>
+          <p className="text-muted-foreground">Here's an overview of your insurance portfolio.</p>
+        </div>
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-card border-2 border-border rounded-xl p-5">
+            <p className="text-xs text-muted-foreground mb-1">Active Policies</p>
+            <p className="text-3xl font-extrabold text-accent">{MOCK_POLICIES.length}</p>
+          </div>
+          <div className="bg-card border-2 border-border rounded-xl p-5">
+            <p className="text-xs text-muted-foreground mb-1">Total Premium</p>
+            <p className="text-3xl font-extrabold text-foreground">
+              ${MOCK_POLICIES.reduce((s, p) => s + p.premium, 0).toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground">/year</p>
+          </div>
+          <div className="bg-card border-2 border-border rounded-xl p-5">
+            <p className="text-xs text-muted-foreground mb-1">Total Coverage</p>
+            <p className="text-3xl font-extrabold text-foreground">
+              ${(MOCK_POLICIES.reduce((s, p) => s + (p.coverages[0]?.limit || 0), 0) / 1000).toFixed(0)}K
+            </p>
+            <p className="text-xs text-muted-foreground">dwelling</p>
+          </div>
+          <div className="bg-card border-2 border-border rounded-xl p-5">
+            <p className="text-xs text-muted-foreground mb-1">Open Claims</p>
+            <p className="text-3xl font-extrabold text-foreground">
+              {MOCK_POLICIES.reduce((s, p) => s + p.claims.length, 0)}
+            </p>
+          </div>
+        </div>
+
+        {/* Dashboard tabs */}
+        <div className="flex items-center gap-1 border-b border-border mb-6">
+          {DASHBOARD_TABS.map((t) => (
+            <button key={t.key} onClick={() => setDashboardTab(t.key)}
+              className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                dashboardTab === t.key
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        {dashboardTab === "policies" && (
+          <>
+            <h2 className="text-lg font-bold text-foreground mb-4">Your Policies</h2>
+            <div className="space-y-4">
+              {MOCK_POLICIES.map((policy) => {
+                const daysToRenewal = daysUntil(policy.expiryDate);
+                return (
+                  <div key={policy.id}
+                    className="bg-card border-2 border-border rounded-2xl overflow-hidden hover:border-accent/30 transition-all cursor-pointer"
+                    onClick={() => setSelectedPolicy(policy)}>
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-lg font-bold text-foreground">{policy.address}</h3>
+                            <StatusBadge status={policy.status} />
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {policy.id} · {policy.plan} Plan · {policy.propertyType} · {policy.units} unit{policy.units > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-extrabold text-foreground">${Math.round(policy.premium / 12)}</p>
+                          <p className="text-xs text-muted-foreground">/month</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Dwelling</p>
+                          <p className="text-sm font-semibold text-foreground">${(policy.coverages[0]?.limit || 0).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Liability</p>
+                          <p className="text-sm font-semibold text-foreground">${((policy.coverages[1]?.limit || 0) / 1000000).toFixed(0)}M</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Renewal</p>
+                          <p className="text-sm font-semibold text-foreground">{daysToRenewal} days</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Claims</p>
+                          <p className="text-sm font-semibold text-foreground">{policy.claims.length} active</p>
+                        </div>
+                      </div>
+                    </div>
+                    {policy.claims.length > 0 && (
+                      <div className="border-t border-border bg-amber-50 px-6 py-3 flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
+                          <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <p className="text-xs text-amber-800 font-medium">
+                          Claim {policy.claims[0].id} ({policy.claims[0].type}) — {policy.claims[0].status}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick actions */}
+            <div className="mt-10">
+              <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: "Get Certificate", desc: "Download or email instantly", icon: "📄" },
+                  { label: "File a Claim", desc: "Report an incident", icon: "🛡️", href: "/claims" },
+                  { label: "Add Property", desc: "Insure another property", icon: "🏠", href: "/quote" },
+                  { label: "Review Renewal", desc: "View upcoming renewal", icon: "🔄", onClick: () => setShowRenewal(true) },
+                ].map((action, i) => (
+                  <button key={i}
+                    onClick={() => action.onClick ? action.onClick() : action.href ? window.location.href = action.href : null}
+                    className="bg-card border-2 border-border rounded-2xl p-5 text-center hover:border-accent/40 hover:shadow-sm transition-all group">
+                    <div className="text-2xl mb-2">{action.icon}</div>
+                    <h3 className="font-bold text-foreground text-sm mb-1">{action.label}</h3>
+                    <p className="text-xs text-muted-foreground">{action.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {dashboardTab === "portfolio" && <PortfolioView />}
+        {dashboardTab === "maintenance" && <MaintenanceLog />}
+        {dashboardTab === "referrals" && <ReferralProgram />}
       </div>
 
-      {/* Modals */}
-      {sharePolicy && <ShareModal policy={sharePolicy} onClose={() => setSharePolicy(null)} />}
-      {addCoveragePolicy && <AddCoverageModal policy={addCoveragePolicy} onClose={() => setAddCoveragePolicy(null)} />}
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-8 mt-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="text-sm font-extrabold tracking-[0.3em] text-accent">CEDAR</div>
-          <p className="text-xs text-muted-foreground">
-            Cedar Insurance is a managing general agency. Coverage is underwritten by A-rated Canadian carriers.
-            Available in Ontario. Terms and conditions apply.
-          </p>
-        </div>
-      </footer>
+      {showRenewal && <RenewalManagement onClose={() => setShowRenewal(false)} />}
+      <PortalFooter />
     </div>
   );
 }

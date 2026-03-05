@@ -12,6 +12,7 @@ import LandlordsPage from "./pages/LandlordsPage";
 import TenantsPage from "./pages/TenantsPage";
 import SupportPage from "./pages/SupportPage";
 import ClientPortal from "./pages/ClientPortal";
+import Portal from "./pages/Portal";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -52,6 +53,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/portal" element={
+              <ProtectedRoute>
+                <Portal />
+              </ProtectedRoute>
+            }/>
+            <Route path="/portal/landlord" element={
               <ProtectedRoute>
                 <ClientPortal />
               </ProtectedRoute>

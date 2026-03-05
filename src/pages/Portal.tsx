@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationBell, RenewalManagement, PortfolioView, MaintenanceLog, ReferralProgram } from "@/components/PortalFeatures";
 import cedarLogo from "@/assets/cedar-logo.png";
+import {
+  BarChart3, FileText, Building2, Wrench, Shield, FolderOpen, CreditCard,
+  Gift, Settings, Package, Users, DollarSign, Home, Megaphone, Zap,
+  LayoutGrid, HelpCircle, Link2
+} from "lucide-react";
 
 // ═══════════════════════════════════════════════════
 // TYPES
@@ -33,36 +38,36 @@ const MOCK_USERS: Record<PortalType, any> = {
   },
 };
 
-const NAV_ITEMS: Record<PortalType, { id: string; label: string; icon: string }[]> = {
+const NAV_ITEMS: Record<PortalType, { id: string; label: string; icon: React.ReactNode }[]> = {
   landlord: [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "policies", label: "My Policies", icon: "📋" },
-    { id: "portfolio", label: "Portfolio", icon: "🏘️" },
-    { id: "maintenance", label: "Maintenance", icon: "🔧" },
-    { id: "claims", label: "Claims", icon: "🛡️" },
-    { id: "documents", label: "Documents", icon: "📄" },
-    { id: "billing", label: "Billing", icon: "💳" },
-    { id: "referrals", label: "Referrals", icon: "🎁" },
-    { id: "settings", label: "Settings", icon: "⚙️" },
+    { id: "dashboard", label: "Dashboard", icon: <BarChart3 size={18} /> },
+    { id: "policies", label: "My Policies", icon: <FileText size={18} /> },
+    { id: "portfolio", label: "Portfolio", icon: <Building2 size={18} /> },
+    { id: "maintenance", label: "Maintenance", icon: <Wrench size={18} /> },
+    { id: "claims", label: "Claims", icon: <Shield size={18} /> },
+    { id: "documents", label: "Documents", icon: <FolderOpen size={18} /> },
+    { id: "billing", label: "Billing", icon: <CreditCard size={18} /> },
+    { id: "referrals", label: "Referrals", icon: <Users size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
   ],
   tenant: [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "policy", label: "My Policy", icon: "📋" },
-    { id: "inventory", label: "Contents Inventory", icon: "📦" },
-    { id: "claims", label: "Claims", icon: "🛡️" },
-    { id: "documents", label: "Documents", icon: "📄" },
-    { id: "billing", label: "Billing", icon: "💳" },
-    { id: "referrals", label: "Referrals", icon: "🎁" },
-    { id: "settings", label: "Settings", icon: "⚙️" },
+    { id: "dashboard", label: "Dashboard", icon: <BarChart3 size={18} /> },
+    { id: "policy", label: "My Policy", icon: <FileText size={18} /> },
+    { id: "inventory", label: "Contents Inventory", icon: <Package size={18} /> },
+    { id: "claims", label: "Claims", icon: <Shield size={18} /> },
+    { id: "documents", label: "Documents", icon: <FolderOpen size={18} /> },
+    { id: "billing", label: "Billing", icon: <CreditCard size={18} /> },
+    { id: "referrals", label: "Referrals", icon: <Gift size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
   ],
   partner: [
-    { id: "dashboard", label: "Overview", icon: "📊" },
-    { id: "referrals", label: "Referrals", icon: "🔗" },
-    { id: "commissions", label: "Commissions", icon: "💰" },
-    { id: "properties", label: "Properties", icon: "🏠" },
-    { id: "marketing", label: "Marketing", icon: "📣" },
-    { id: "integration", label: "Integration", icon: "⚡" },
-    { id: "settings", label: "Settings", icon: "⚙️" },
+    { id: "dashboard", label: "Overview", icon: <LayoutGrid size={18} /> },
+    { id: "referrals", label: "Referrals", icon: <Link2 size={18} /> },
+    { id: "commissions", label: "Commissions", icon: <DollarSign size={18} /> },
+    { id: "properties", label: "Properties", icon: <Home size={18} /> },
+    { id: "marketing", label: "Marketing", icon: <Megaphone size={18} /> },
+    { id: "integration", label: "Integration", icon: <Zap size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
   ],
 };
 
@@ -195,7 +200,7 @@ function PortalSidebar({
                 : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
             } ${collapsed ? "justify-center" : ""}`}
           >
-            <span className="text-base flex-shrink-0">{item.icon}</span>
+            <span className="flex-shrink-0">{item.icon}</span>
             {!collapsed && <span>{item.label}</span>}
           </button>
         ))}
@@ -429,7 +434,7 @@ function PartnerDashboard({ user, onNav }: { user: any; onNav: (id: string) => v
                 <p className="text-xs text-muted-foreground">{a.date}</p>
               </div>
             </div>
-            {a.amount && <span className="text-sm font-bold text-green-600">{a.amount}</span>}
+            {a.amount && <span className="text-sm font-bold text-accent">{a.amount}</span>}
           </div>
         ))}
       </div>
@@ -549,8 +554,11 @@ export default function Portal() {
               Switch Portal
             </button>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <NotificationBell />
+            <button onClick={() => window.location.href = "/support"} className="p-2 rounded-lg hover:bg-muted/50 transition-colors" title="Help">
+              <HelpCircle size={20} className="text-muted-foreground" />
+            </button>
             <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
               <span className="text-xs font-bold text-accent">{mockUser.firstName[0]}{mockUser.lastName[0]}</span>
             </div>

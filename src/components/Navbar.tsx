@@ -44,8 +44,8 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">Login</Button>
-          <Button variant="hero" size="sm">Get a Quote</Button>
+          <Link to="/auth"><Button variant="ghost" size="sm">Login</Button></Link>
+          <Link to="/quote"><Button variant="hero" size="sm">Get a Quote</Button></Link>
         </div>
 
         <button
@@ -81,8 +81,8 @@ const Navbar = () => {
             )
           )}
           <div className="flex flex-col gap-2 pt-3">
-            <Button variant="ghost" size="sm">Login</Button>
-            <Button variant="hero" size="sm">Get a Quote</Button>
+            <Link to="/auth" onClick={() => setMobileOpen(false)}><Button variant="ghost" size="sm" className="w-full">Login</Button></Link>
+            <Link to="/quote" onClick={() => setMobileOpen(false)}><Button variant="hero" size="sm" className="w-full">Get a Quote</Button></Link>
           </div>
         </div>
       )}

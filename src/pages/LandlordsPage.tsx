@@ -530,9 +530,9 @@ export default function LandlordsPage() {
 
       {/* ═══ BOTTOM CTA ═══ */}
       <section className="max-w-5xl mx-auto px-5 pb-16">
-        <div className="bg-accent rounded-2xl p-12 text-center text-accent-foreground">
-          <h2 className="text-3xl font-extrabold mb-3">Ready to protect your investment?</h2>
-          <p className="text-accent-foreground/80 mb-8 max-w-lg mx-auto">
+        <div className="bg-primary rounded-2xl p-12 md:p-16 text-center text-primary-foreground">
+          <h2 className="text-3xl md:text-4xl mb-4">Ready to protect your investment?</h2>
+          <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
             Join hundreds of Ontario landlords who switched to smarter, faster coverage.
             Get a quote in 60 seconds — no commitment, no phone calls.
           </p>

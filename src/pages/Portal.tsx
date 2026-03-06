@@ -1,7 +1,12 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { NotificationBell, RenewalManagement, PortfolioView, MaintenanceLog, ReferralProgram } from "@/components/PortalFeatures";
+import { NotificationBell, RenewalManagement } from "@/components/PortalFeatures";
+import {
+  LandlordPolicies, LandlordPortfolio, LandlordMaintenance,
+  LandlordClaims, LandlordDocuments, LandlordBilling,
+  LandlordReferrals, LandlordSettings,
+} from "@/components/LandlordContent";
 import cedarLogo from "@/assets/cedar-logo.png";
 import {
   BarChart3, FileText, Building2, Wrench, Shield, FolderOpen, CreditCard,
@@ -452,14 +457,14 @@ function PortalContent({ type, activeNav, onNav }: { type: PortalType; activeNav
   if (type === "landlord") {
     switch (activeNav) {
       case "dashboard": return <LandlordDashboard user={user} onNav={onNav} />;
-      case "policies": return <PlaceholderSection title="My Policies" description="View and manage all your rental property insurance policies in one place." />;
-      case "portfolio": return <PortfolioView />;
-      case "maintenance": return <MaintenanceLog />;
-      case "claims": return <PlaceholderSection title="Claims" description="File new claims and track the status of existing ones." />;
-      case "documents": return <PlaceholderSection title="Documents" description="Access your policy documents, certificates, and receipts." />;
-      case "billing": return <PlaceholderSection title="Billing" description="View payment history, update payment methods, and manage billing preferences." />;
-      case "referrals": return <ReferralProgram />;
-      case "settings": return <PlaceholderSection title="Settings" description="Update your profile, notification preferences, and account settings." />;
+      case "policies": return <LandlordPolicies />;
+      case "portfolio": return <LandlordPortfolio />;
+      case "maintenance": return <LandlordMaintenance />;
+      case "claims": return <LandlordClaims />;
+      case "documents": return <LandlordDocuments />;
+      case "billing": return <LandlordBilling />;
+      case "referrals": return <LandlordReferrals />;
+      case "settings": return <LandlordSettings />;
       default: return null;
     }
   }
@@ -472,7 +477,7 @@ function PortalContent({ type, activeNav, onNav }: { type: PortalType; activeNav
       case "claims": return <PlaceholderSection title="Claims" description="File new claims and track the status of existing ones." />;
       case "documents": return <PlaceholderSection title="Documents" description="Access and share your certificate of insurance and policy documents." />;
       case "billing": return <PlaceholderSection title="Billing" description="View payment history and manage your payment method." />;
-      case "referrals": return <ReferralProgram />;
+      case "referrals": return <PlaceholderSection title="Referrals" description="Refer friends and earn credits on your next billing cycle." />;
       case "settings": return <PlaceholderSection title="Settings" description="Update your profile, notification preferences, and account settings." />;
       default: return null;
     }

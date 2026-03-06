@@ -288,28 +288,28 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
 
       {/* Integration Tiers */}
       <section className="py-20 bg-card">
-        <div className="container max-w-4xl">
+        <div className="container max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-2">Integration options</h2>
           <p className="text-muted-foreground text-center mb-10">Start simple and scale up as your volume grows.</p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
             {INTEGRATION_TIERS.map((t, i) => (
-              <div key={i} className="rounded-2xl border-2 border-border bg-background p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center text-sm font-bold">
+              <div key={i} className="rounded-2xl border-2 border-border bg-background p-7 flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center text-sm font-bold flex-shrink-0">
                     {i + 1}
                   </div>
-                  <h3 className="font-bold text-foreground">{t.tier}</h3>
+                  <h3 className="text-lg font-bold text-foreground">{t.tier}</h3>
                 </div>
-                <div className="flex gap-2 mb-3">
-                  <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{t.effort}</span>
-                  <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{t.time}</span>
+                <div className="flex gap-2 mb-4">
+                  <span className="text-xs font-medium bg-muted text-muted-foreground px-3 py-1 rounded-full whitespace-nowrap">{t.effort}</span>
+                  <span className="text-xs font-medium bg-muted text-muted-foreground px-3 py-1 rounded-full whitespace-nowrap">{t.time}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">{t.desc}</p>
-                <div className="space-y-2">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-5">{t.desc}</p>
+                <div className="space-y-3 mt-auto">
                   {t.features.map((f, j) => (
-                    <div key={j} className="flex items-start gap-2">
-                      <Check className="w-3 h-3 text-accent flex-shrink-0 mt-1" />
-                      <span className="text-xs text-foreground">{f}</span>
+                    <div key={j} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground leading-snug">{f}</span>
                     </div>
                   ))}
                 </div>

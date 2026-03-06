@@ -538,14 +538,14 @@ export default function LandlordsPage() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <button onClick={handleGetQuote}
-              className="bg-background text-accent px-8 py-4 rounded-xl font-bold hover:bg-background/90 transition-colors">
+              className="bg-secondary text-secondary-foreground px-8 py-4 rounded-xl font-bold hover:bg-secondary/90 transition-colors">
               Get a Quote
             </button>
             <button onClick={() => {
               const el = document.querySelector('[data-section="estimator"]');
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-              className="bg-accent-foreground/10 text-accent-foreground border-2 border-accent-foreground/20 px-8 py-4 rounded-xl font-bold hover:bg-accent-foreground/20 transition-colors">
+              className="border-2 border-primary-foreground/30 text-primary-foreground px-8 py-4 rounded-xl font-bold hover:bg-primary-foreground/10 transition-colors">
               Try the Estimator
             </button>
           </div>

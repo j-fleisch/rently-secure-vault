@@ -7,6 +7,10 @@ import {
   LandlordClaims, LandlordDocuments, LandlordBilling,
   LandlordReferrals, LandlordSettings,
 } from "@/components/LandlordContent";
+import {
+  TenantPolicy, TenantInventory, TenantClaims,
+  TenantDocuments, TenantBilling, TenantReferrals, TenantSettings,
+} from "@/components/TenantContent";
 import cedarLogo from "@/assets/cedar-logo.png";
 import {
   BarChart3, FileText, Building2, Wrench, Shield, FolderOpen, CreditCard,
@@ -472,13 +476,13 @@ function PortalContent({ type, activeNav, onNav }: { type: PortalType; activeNav
   if (type === "tenant") {
     switch (activeNav) {
       case "dashboard": return <TenantDashboard user={user} onNav={onNav} />;
-      case "policy": return <PlaceholderSection title="My Policy" description="View your tenant insurance policy details, coverage limits, and deductibles." />;
-      case "inventory": return <PlaceholderSection title="Contents Inventory" description="Track your personal belongings for accurate coverage and faster claims." />;
-      case "claims": return <PlaceholderSection title="Claims" description="File new claims and track the status of existing ones." />;
-      case "documents": return <PlaceholderSection title="Documents" description="Access and share your certificate of insurance and policy documents." />;
-      case "billing": return <PlaceholderSection title="Billing" description="View payment history and manage your payment method." />;
-      case "referrals": return <PlaceholderSection title="Referrals" description="Refer friends and earn credits on your next billing cycle." />;
-      case "settings": return <PlaceholderSection title="Settings" description="Update your profile, notification preferences, and account settings." />;
+      case "policy": return <TenantPolicy />;
+      case "inventory": return <TenantInventory />;
+      case "claims": return <TenantClaims />;
+      case "documents": return <TenantDocuments />;
+      case "billing": return <TenantBilling />;
+      case "referrals": return <TenantReferrals />;
+      case "settings": return <TenantSettings />;
       default: return null;
     }
   }

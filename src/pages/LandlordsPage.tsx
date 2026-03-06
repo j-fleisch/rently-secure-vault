@@ -530,22 +530,22 @@ export default function LandlordsPage() {
 
       {/* ═══ BOTTOM CTA ═══ */}
       <section className="max-w-5xl mx-auto px-5 pb-16">
-        <div className="bg-accent rounded-2xl p-12 text-center text-accent-foreground">
-          <h2 className="text-3xl font-extrabold mb-3">Ready to protect your investment?</h2>
-          <p className="text-accent-foreground/80 mb-8 max-w-lg mx-auto">
+        <div className="bg-primary rounded-2xl p-12 md:p-16 text-center text-primary-foreground">
+          <h2 className="text-3xl md:text-4xl mb-4">Ready to protect your investment?</h2>
+          <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
             Join hundreds of Ontario landlords who switched to smarter, faster coverage.
             Get a quote in 60 seconds — no commitment, no phone calls.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <button onClick={handleGetQuote}
-              className="bg-background text-accent px-8 py-4 rounded-xl font-bold hover:bg-background/90 transition-colors">
+              className="bg-secondary text-secondary-foreground px-8 py-4 rounded-xl font-bold hover:bg-secondary/90 transition-colors">
               Get a Quote
             </button>
             <button onClick={() => {
               const el = document.querySelector('[data-section="estimator"]');
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-              className="bg-accent-foreground/10 text-accent-foreground border-2 border-accent-foreground/20 px-8 py-4 rounded-xl font-bold hover:bg-accent-foreground/20 transition-colors">
+              className="border-2 border-primary-foreground/30 text-primary-foreground px-8 py-4 rounded-xl font-bold hover:bg-primary-foreground/10 transition-colors">
               Try the Estimator
             </button>
           </div>

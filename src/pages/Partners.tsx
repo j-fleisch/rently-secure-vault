@@ -305,7 +305,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                   <span className="text-xs font-medium bg-muted text-muted-foreground px-3 py-1 rounded-full whitespace-nowrap">{t.time}</span>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-5">{t.desc}</p>
-                <div className="space-y-3 mt-auto">
+                <div className="space-y-3">
                   {t.features.map((f, j) => (
                     <div key={j} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />

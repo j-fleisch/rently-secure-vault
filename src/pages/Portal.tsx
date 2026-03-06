@@ -11,6 +11,10 @@ import {
   TenantPolicy, TenantInventory, TenantClaims,
   TenantDocuments, TenantBilling, TenantReferrals, TenantSettings,
 } from "@/components/TenantContent";
+import {
+  PartnerReferrals, PartnerCommissions, PartnerProperties,
+  PartnerMarketing, PartnerIntegration, PartnerSettings,
+} from "@/components/PartnerContent";
 import cedarLogo from "@/assets/cedar-logo.png";
 import {
   BarChart3, FileText, Building2, Wrench, Shield, FolderOpen, CreditCard,
@@ -490,12 +494,12 @@ function PortalContent({ type, activeNav, onNav }: { type: PortalType; activeNav
   if (type === "partner") {
     switch (activeNav) {
       case "dashboard": return <PartnerDashboard user={user} onNav={onNav} />;
-      case "referrals": return <PlaceholderSection title="Referrals" description="Track all your client referrals, their status, and conversion metrics." />;
-      case "commissions": return <PlaceholderSection title="Commissions" description="View your earned commissions, pending payouts, and payment history." />;
-      case "properties": return <PlaceholderSection title="Properties" description="Manage properties in your portfolio and their insurance status." />;
-      case "marketing": return <PlaceholderSection title="Marketing" description="Access branded materials, widgets, and co-marketing resources." />;
-      case "integration": return <PlaceholderSection title="Integration" description="Set up API access, webhooks, and embed widgets for your platform." />;
-      case "settings": return <PlaceholderSection title="Settings" description="Update your company profile, team members, and account settings." />;
+      case "referrals": return <PartnerReferrals />;
+      case "commissions": return <PartnerCommissions />;
+      case "properties": return <PartnerProperties />;
+      case "marketing": return <PartnerMarketing />;
+      case "integration": return <PartnerIntegration />;
+      case "settings": return <PartnerSettings />;
       default: return null;
     }
   }

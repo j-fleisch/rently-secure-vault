@@ -127,7 +127,7 @@ const Quote = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [partnerEmails, setPartnerEmails] = useState<string[]>([""]);
   const [propertyLoading, setPropertyLoading] = useState(false);
-  const [premiums, setPremiums] = useState<PremiumTiers | null>(null);
+  const [rating, setRating] = useState<RatingBreakdown | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     address,

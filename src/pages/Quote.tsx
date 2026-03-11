@@ -888,10 +888,6 @@ const Quote = () => {
         const coverageLabel = isLandlordBind
           ? (formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)) + " Plan"
           : (formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)) + " Tenant Coverage";
-        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-        const tierData = rating.tiers[tierKey];
-        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
-        const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
         const effectiveDate = formData.coverageStartDate ? format(formData.coverageStartDate, "PPP") : format(new Date(), "PPP");
 
         return (
@@ -907,15 +903,25 @@ const Quote = () => {
             {/* Coverage Summary */}
             <div className="rounded-xl border-2 border-accent/30 bg-accent/5 p-5 space-y-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Shield className="w-4 h-4 text-accent" /> {tierLabel} Plan — Coverage Summary
+                <Shield className="w-4 h-4 text-accent" /> {coverageLabel} — Coverage Summary
               </h3>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Property</span><span className="font-medium text-foreground">{formData.address}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{liabilityLabel}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{isTenantBind ? "Address" : "Property"}</span><span className="font-medium text-foreground">{formData.address}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${premiumMonthly}/mo (${premiumAnnual.toLocaleString()}/yr)</span></div>
+                {isLandlordBind && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{formData.selectedPlan === "basic" ? "$1,000,000" : formData.selectedPlan === "standard" ? "$2,000,000" : "$5,000,000"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating!.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"].toLocaleString()}</span></div>
+                  </>
+                )}
+                {isTenantBind && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">$1,000,000</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Coverage Type</span><span className="font-medium text-foreground">{formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)}</span></div>
+                  </>
+                )}
                 <div className="flex justify-between"><span className="text-muted-foreground">Effective</span><span className="font-medium text-foreground">{effectiveDate}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating.rentalIncomeLimits[tierKey].toLocaleString()}</span></div>
               </div>
             </div>
 

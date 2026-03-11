@@ -654,11 +654,11 @@ const Quote = () => {
                     constructionType: formData.constructionType,
                     heatingType: formData.heating,
                     roofType: formData.roof,
-                    replacementCost: parseInt(formData.replacementCost.replace(/,/g, '')) || 400000,
+                    replacementCost: parseInt((formData.replacementCost || '0').replace(/,/g, '')) || 400000,
                     monthlyRentalIncome: parseInt((formData.rentalIncome || '0').replace(/,/g, '')) || 0,
-                    isVacant: formData.isVacant === true || formData.isVacant === "true",
-                    claimsHistory: parseInt(formData.claimsHistory) || 0,
-                    shortTermRental: formData.shortTermRental === true || formData.shortTermRental === "true",
+                    isVacant: formData.isVacant,
+                    claimsHistory: formData.claimsHistory,
+                    shortTermRental: formData.shortTermRental,
                   }}
                   rating={rating}
                   selectedTier={formData.selectedPlan as "basic" | "standard" | "premium"}

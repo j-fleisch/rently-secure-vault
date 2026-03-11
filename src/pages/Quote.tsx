@@ -207,18 +207,23 @@ const Quote = () => {
       return;
     }
 
-    // When moving to quote-result, calculate premiums
+    // When moving to quote-result, calculate premiums via rating engine
     if (currentStepId === "rental-details") {
-      const p = calcPremium({
-        replacementCost: parseInt(formData.replacementCost) || 400000,
-        units: parseInt(formData.units) || 1,
+      const r = rateLandlordQuote({
+        propertyType: formData.propertyType,
         yearBuilt: parseInt(formData.yearBuilt) || 1990,
-        heating: formData.heating,
-        claimsHistory: formData.claimsHistory,
+        sqft: parseInt(formData.sqft) || 1200,
+        units: parseInt(formData.units) || 1,
+        constructionType: formData.constructionType,
+        heatingType: formData.heating,
+        roofType: formData.roof,
+        replacementCost: parseInt(formData.replacementCost) || 400000,
+        monthlyRentalIncome: parseInt(formData.rentalIncome) || 0,
         isVacant: formData.isVacant,
+        claimsHistory: formData.claimsHistory,
         shortTermRental: formData.shortTermRental,
       });
-      setPremiums(p);
+      setRating(r);
     }
 
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);

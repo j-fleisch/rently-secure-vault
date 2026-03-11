@@ -28,8 +28,11 @@ import {
   TIER_DETAILS,
   buildTierFeatures,
   type RatingBreakdown,
+  rateTenantQuote,
+  UNIT_TYPE_OPTIONS,
+  type TenantRatingBreakdown,
 } from "@/lib/ratingEngine";
-import { LandlordPremiumBreakdown } from "@/components/PremiumBreakdown";
+import { LandlordPremiumBreakdown, TenantPremiumBreakdown } from "@/components/PremiumBreakdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { downloadCertificate, type CertificateData } from "@/lib/generateCertificate";

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, addYears } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, ArrowRight, CheckCircle, Home, Shield, User, Phone,
   Building2, Calendar as CalendarIcon, Layers, Users, Tag, Plus, X,
   Mail, HelpCircle, Wrench, Clock, CalendarDays, Info, Loader2,
+  CreditCard, FileText, Download, ExternalLink, Lock,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,6 +30,10 @@ import {
   type RatingBreakdown,
 } from "@/lib/ratingEngine";
 import { LandlordPremiumBreakdown } from "@/components/PremiumBreakdown";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { downloadCertificate, type CertificateData } from "@/lib/generateCertificate";
+import { useToast } from "@/hooks/use-toast";
 
 // ── Owner types ──
 const ownerTypes = [
@@ -58,8 +63,6 @@ const tenantCoverageOptions = [
   { value: "comprehensive", label: "Comprehensive", description: "Full coverage including sewer backup & identity theft", price: "From $40/mo" },
 ];
 
-// Dropdown options imported from ratingEngine
-
 const landlordInsuredOptions = [
   { value: "yes", label: "Yes", description: "I currently have landlord insurance" },
   { value: "no", label: "No", description: "I don't have coverage right now" },
@@ -81,8 +84,8 @@ const LANDLORD_STEPS = [
   { id: "property-details", label: "Property" },
   { id: "rental-details", label: "Rental" },
   { id: "quote-result", label: "Quote" },
-  { id: "contact", label: "Contact" },
-  { id: "share-quote", label: "Share" },
+  { id: "bind-checkout", label: "Bind" },
+  { id: "confirmation", label: "Confirmed" },
 ];
 
 // ── Form data shape ──
@@ -113,22 +116,49 @@ interface FormData {
   shortTermRental: boolean;
   liabilityLimit: string;
   selectedPlan: string;
-  // Contact
+  // Contact / Insured
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
+  // Bind fields
+  legalFirstName: string;
+  legalLastName: string;
+  mailingAddress: string;
+  additionalInsuredName: string;
+  additionalInsuredType: string;
+  additionalInsuredEmail: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvc: string;
+  termsAccepted: boolean;
+}
+
+// Policy number generator
+function generatePolicyNumber(): string {
+  const prefix = "CDR";
+  const year = new Date().getFullYear().toString().slice(-2);
+  const random = Math.floor(100000 + Math.random() * 900000);
+  return `${prefix}-${year}-${random}`;
 }
 
 const Quote = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const address = searchParams.get("address") || "";
 
   const [currentStep, setCurrentStep] = useState(0);
   const [partnerEmails, setPartnerEmails] = useState<string[]>([""]);
   const [propertyLoading, setPropertyLoading] = useState(false);
   const [rating, setRating] = useState<RatingBreakdown | null>(null);
+  const [bindingInProgress, setBindingInProgress] = useState(false);
+  const [boundPolicy, setBoundPolicy] = useState<{
+    policyNumber: string;
+    effectiveDate: string;
+    expiryDate: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     address,
@@ -158,6 +188,16 @@ const Quote = () => {
     lastName: "",
     email: "",
     phone: "",
+    legalFirstName: "",
+    legalLastName: "",
+    mailingAddress: "",
+    additionalInsuredName: "",
+    additionalInsuredType: "Mortgage Lender",
+    additionalInsuredEmail: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvc: "",
+    termsAccepted: false,
   });
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
@@ -177,14 +217,86 @@ const Quote = () => {
       case "property-details": return !!formData.yearBuilt && !propertyLoading;
       case "rental-details": return !!formData.rentalIncome;
       case "quote-result": return !!formData.selectedPlan;
+      case "bind-checkout":
+        return !!formData.legalFirstName && !!formData.legalLastName && !!formData.email
+          && !!formData.mailingAddress && !!formData.cardNumber && !!formData.cardExpiry
+          && !!formData.cardCvc && formData.termsAccepted;
+      case "confirmation": return true;
       case "contact": return !!formData.firstName && !!formData.email;
       case "share-quote": return true;
       default: return false;
     }
   };
 
+  const handleBindPolicy = async () => {
+    if (!rating || !formData.selectedPlan) return;
+    setBindingInProgress(true);
+
+    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+    const tierData = rating.tiers[tierKey];
+    const policyNumber = generatePolicyNumber();
+    const effectiveDate = formData.coverageStartDate
+      ? format(formData.coverageStartDate, "yyyy-MM-dd")
+      : format(new Date(), "yyyy-MM-dd");
+    const expiryDate = formData.coverageStartDate
+      ? format(addYears(formData.coverageStartDate, 1), "yyyy-MM-dd")
+      : format(addYears(new Date(), 1), "yyyy-MM-dd");
+
+    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+
+    // Save to database if user is authenticated
+    if (user) {
+      try {
+        const { error } = await supabase.from("policies" as any).insert({
+          user_id: user.id,
+          policy_number: policyNumber,
+          status: "active",
+          address: formData.address,
+          property_type: formData.propertyType,
+          year_built: parseInt(formData.yearBuilt) || null,
+          sqft: parseInt(formData.sqft) || null,
+          units: parseInt(formData.units) || 1,
+          construction_type: formData.constructionType,
+          heating_type: formData.heating,
+          roof_type: formData.roof,
+          replacement_cost: parseInt(formData.replacementCost) || 400000,
+          tier: tierKey,
+          annual_premium: tierData.annual,
+          monthly_premium: tierData.monthly,
+          liability_limit: liabilityLabel,
+          rental_income_limit: rating.rentalIncomeLimits[tierKey],
+          effective_date: effectiveDate,
+          expiry_date: expiryDate,
+          insured_first_name: formData.legalFirstName,
+          insured_last_name: formData.legalLastName,
+          insured_email: formData.email,
+          insured_phone: formData.phone || null,
+          mailing_address: formData.mailingAddress,
+          additional_insured_name: formData.additionalInsuredName || null,
+          additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
+          additional_insured_email: formData.additionalInsuredEmail || null,
+          payment_method: "simulated",
+          payment_last_four: formData.cardNumber.slice(-4),
+        } as any);
+
+        if (error) {
+          console.error("Policy save error:", error);
+          toast({ title: "Policy saved locally", description: "Your policy was bound but could not be saved to your account.", variant: "destructive" });
+        }
+      } catch (err) {
+        console.error("Policy save exception:", err);
+      }
+    }
+
+    // Simulate 1.5s processing
+    await new Promise((r) => setTimeout(r, 1500));
+
+    setBoundPolicy({ policyNumber, effectiveDate, expiryDate });
+    setBindingInProgress(false);
+    setCurrentStep((s) => s + 1);
+  };
+
   const handleNext = () => {
-    // When moving from owner-type to property-details for landlord, auto-populate
     if (currentStepId === "owner-type" && formData.ownerType === "landlord") {
       setCurrentStep((s) => s + 1);
       setPropertyLoading(true);
@@ -208,7 +320,6 @@ const Quote = () => {
       return;
     }
 
-    // When moving to quote-result, calculate premiums via rating engine
     if (currentStepId === "rental-details") {
       const r = rateLandlordQuote({
         propertyType: formData.propertyType,
@@ -225,6 +336,15 @@ const Quote = () => {
         shortTermRental: formData.shortTermRental,
       });
       setRating(r);
+    }
+
+    // Pre-fill bind legal name from contact info when moving to bind step
+    if (currentStepId === "quote-result") {
+      setFormData((prev) => ({
+        ...prev,
+        legalFirstName: prev.legalFirstName || prev.firstName,
+        legalLastName: prev.legalLastName || prev.lastName,
+      }));
     }
 
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);
@@ -252,6 +372,17 @@ const Quote = () => {
     updateField("phone", formatPhone(e.target.value));
   };
 
+  const formatCardNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 16);
+    return digits.replace(/(.{4})/g, "$1 ").trim();
+  };
+
+  const formatExpiry = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 4);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  };
+
   const handleSubmit = () => {
     const validPartnerEmails = partnerEmails.filter((e) => e.trim() !== "");
     const allRecipients = [formData.email, ...validPartnerEmails].join(", ");
@@ -266,6 +397,29 @@ const Quote = () => {
     setPartnerEmails((prev) => prev.filter((_, i) => i !== index));
 
   const handleOwnerTypeSelect = (value: string) => updateField("ownerType", value);
+
+  const getCertificateData = (): CertificateData | null => {
+    if (!rating || !boundPolicy || !formData.selectedPlan) return null;
+    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+    const tierData = rating.tiers[tierKey];
+    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+    return {
+      policyNumber: boundPolicy.policyNumber,
+      insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
+      mailingAddress: formData.mailingAddress,
+      propertyAddress: formData.address,
+      effectiveDate: boundPolicy.effectiveDate,
+      expiryDate: boundPolicy.expiryDate,
+      tier: tierKey,
+      annualPremium: tierData.annual,
+      monthlyPremium: tierData.monthly,
+      liabilityLimit: liabilityLabel,
+      replacementCost: parseInt(formData.replacementCost) || 400000,
+      rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
+      additionalInsuredName: formData.additionalInsuredName || undefined,
+      additionalInsuredType: formData.additionalInsuredType || undefined,
+    };
+  };
 
   // ── Shared input class ──
   const inputClass = "w-full h-12 px-4 rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
@@ -426,7 +580,6 @@ const Quote = () => {
               <span className="text-xs text-accent">Data sourced from MPAC & municipal records. ✦ = auto-filled.</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Property Type */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Property Type ✦</label>
                 <select value={formData.propertyType} onChange={(e) => updateField("propertyType", e.target.value)} className={selectClass}>
@@ -434,19 +587,16 @@ const Quote = () => {
                   {PROPERTY_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Year Built */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Year Built ✦</label>
                 <input type="number" value={formData.yearBuilt} onChange={(e) => updateField("yearBuilt", e.target.value)}
                   placeholder="e.g. 1987" className={inputClass} />
               </div>
-              {/* Sqft */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Square Footage ✦</label>
                 <input type="number" value={formData.sqft} onChange={(e) => updateField("sqft", e.target.value)}
                   placeholder="e.g. 1450" className={inputClass} />
               </div>
-              {/* Units */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Units ✦</label>
                 <select value={formData.units} onChange={(e) => updateField("units", e.target.value)} className={selectClass}>
@@ -454,7 +604,6 @@ const Quote = () => {
                   {["1","2","3","4","5+"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Storeys */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Storeys ✦</label>
                 <select value={formData.storeys} onChange={(e) => updateField("storeys", e.target.value)} className={selectClass}>
@@ -462,7 +611,6 @@ const Quote = () => {
                   {["1","1.5","2","2.5","3"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Construction */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Construction ✦</label>
                 <select value={formData.constructionType} onChange={(e) => updateField("constructionType", e.target.value)} className={selectClass}>
@@ -470,7 +618,6 @@ const Quote = () => {
                   {CONSTRUCTION_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Heating */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Heating ✦</label>
                 <select value={formData.heating} onChange={(e) => updateField("heating", e.target.value)} className={selectClass}>
@@ -478,7 +625,6 @@ const Quote = () => {
                   {HEATING_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Roof */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Roof ✦</label>
                 <select value={formData.roof} onChange={(e) => updateField("roof", e.target.value)} className={selectClass}>
@@ -486,7 +632,6 @@ const Quote = () => {
                   {ROOF_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Basement */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Basement ✦</label>
                 <select value={formData.basement} onChange={(e) => updateField("basement", e.target.value)} className={selectClass}>
@@ -494,7 +639,6 @@ const Quote = () => {
                   {BASEMENT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
-              {/* Replacement Cost */}
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-1">Replacement Cost ✦</label>
                 <input type="number" value={formData.replacementCost}
@@ -513,8 +657,6 @@ const Quote = () => {
               <h2 className="text-2xl md:text-3xl mb-2">Tell us about your rental</h2>
               <p className="text-muted-foreground">A few more questions to finalize your quote.</p>
             </div>
-
-            {/* Rental Income */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1">Monthly Rental Income (all units)</label>
               <div className="relative">
@@ -529,8 +671,6 @@ const Quote = () => {
                   className={cn(inputClass, "pl-8")} />
               </div>
             </div>
-
-            {/* Occupied? */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">Currently occupied?</label>
               <div className="flex gap-3">
@@ -538,8 +678,6 @@ const Quote = () => {
                 <SelectionCard selected={formData.isVacant === true} onClick={() => updateField("isVacant", true)} label="No, vacant" />
               </div>
             </div>
-
-            {/* Claims */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">Claims in past 5 years?</label>
               <div className="grid grid-cols-4 gap-2">
@@ -549,8 +687,6 @@ const Quote = () => {
                 ))}
               </div>
             </div>
-
-            {/* Short-term rental */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">Short-term rental use (Airbnb, VRBO)?</label>
               <div className="flex gap-3">
@@ -560,8 +696,6 @@ const Quote = () => {
                   onClick={() => updateField("shortTermRental", true)} label="Yes" />
               </div>
             </div>
-
-            {/* Liability */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1">Liability Coverage</label>
               <select value={formData.liabilityLimit} onChange={(e) => updateField("liabilityLimit", e.target.value)} className={selectClass}>
@@ -571,8 +705,6 @@ const Quote = () => {
                 <option value="5000000">$5,000,000</option>
               </select>
             </div>
-
-            {/* Coverage Start Date */}
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-accent" /> When do you need coverage to start?
@@ -668,6 +800,265 @@ const Quote = () => {
           </div>
         );
 
+      // ── Landlord: Bind / Checkout ──
+      case "bind-checkout": {
+        if (!rating || !formData.selectedPlan) return null;
+        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+        const tierData = rating.tiers[tierKey];
+        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+        const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+        const effectiveDate = formData.coverageStartDate ? format(formData.coverageStartDate, "PPP") : format(new Date(), "PPP");
+
+        return (
+          <div className="space-y-8">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent/10 mb-3">
+                <Lock className="w-7 h-7 text-accent" />
+              </div>
+              <h2 className="text-2xl md:text-3xl mb-1">Bind Your Coverage</h2>
+              <p className="text-muted-foreground">Review your details, add payment, and bind instantly.</p>
+            </div>
+
+            {/* Coverage Summary */}
+            <div className="rounded-xl border-2 border-accent/30 bg-accent/5 p-5 space-y-3">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Shield className="w-4 h-4 text-accent" /> {tierLabel} Plan — Coverage Summary
+              </h3>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Property</span><span className="font-medium text-foreground">{formData.address}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{liabilityLabel}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Effective</span><span className="font-medium text-foreground">{effectiveDate}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating.rentalIncomeLimits[tierKey].toLocaleString()}</span></div>
+              </div>
+            </div>
+
+            {/* Named Insured */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <User className="w-4 h-4 text-accent" /> Named Insured (Legal Name)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Legal First Name *</label>
+                  <input type="text" value={formData.legalFirstName} onChange={(e) => updateField("legalFirstName", e.target.value)}
+                    placeholder="Jane" className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Legal Last Name *</label>
+                  <input type="text" value={formData.legalLastName} onChange={(e) => updateField("legalLastName", e.target.value)}
+                    placeholder="Smith" className={inputClass} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email Address *</label>
+                  <input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)}
+                    placeholder="jane@example.com" className={inputClass} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Phone (optional)</label>
+                  <input type="tel" value={formData.phone} onChange={handlePhoneChange}
+                    placeholder="416-555-0123" maxLength={12} className={inputClass} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Mailing Address *</label>
+                  <input type="text" value={formData.mailingAddress} onChange={(e) => updateField("mailingAddress", e.target.value)}
+                    placeholder="123 Main St, Toronto, ON M5V 1A1" className={inputClass} />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Insured */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-accent" /> Additional Insured
+                <span className="text-xs font-normal text-muted-foreground">(optional — e.g. mortgage lender)</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Name / Organization</label>
+                  <input type="text" value={formData.additionalInsuredName} onChange={(e) => updateField("additionalInsuredName", e.target.value)}
+                    placeholder="e.g. TD Bank, RBC Royal Bank" className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Type</label>
+                  <select value={formData.additionalInsuredType} onChange={(e) => updateField("additionalInsuredType", e.target.value)} className={selectClass}>
+                    <option value="Mortgage Lender">Mortgage Lender</option>
+                    <option value="Property Manager">Property Manager</option>
+                    <option value="Co-Owner">Co-Owner</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email (for COI delivery)</label>
+                  <input type="email" value={formData.additionalInsuredEmail} onChange={(e) => updateField("additionalInsuredEmail", e.target.value)}
+                    placeholder="lender@bank.com" className={inputClass} />
+                </div>
+              </div>
+            </div>
+
+            {/* Payment */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-accent" /> Payment Information
+              </h3>
+              <div className="rounded-xl border-2 border-border bg-card p-5 space-y-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                  <Lock className="w-3 h-3" /> Secure simulated payment — no real charges
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Card Number *</label>
+                  <input type="text" value={formData.cardNumber}
+                    onChange={(e) => updateField("cardNumber", formatCardNumber(e.target.value))}
+                    placeholder="4242 4242 4242 4242" maxLength={19} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Expiry *</label>
+                    <input type="text" value={formData.cardExpiry}
+                      onChange={(e) => updateField("cardExpiry", formatExpiry(e.target.value))}
+                      placeholder="MM/YY" maxLength={5} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">CVC *</label>
+                    <input type="text" value={formData.cardCvc}
+                      onChange={(e) => updateField("cardCvc", e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      placeholder="123" maxLength={4} className={inputClass} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <div className="rounded-xl border-2 border-border bg-card p-5 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={formData.termsAccepted}
+                  onChange={(e) => updateField("termsAccepted", e.target.checked)}
+                  className="h-5 w-5 rounded border-2 border-muted-foreground/30 accent-accent mt-0.5" />
+                <span className="text-sm text-muted-foreground leading-relaxed">
+                  I confirm the information provided is accurate. I understand this policy is bound upon payment and is subject to the terms, conditions, and exclusions of the policy wording. I authorize Cedar Insurance to charge the premium shown above. I have read and agree to the{" "}
+                  <a href="#" className="text-accent underline">Terms of Service</a> and{" "}
+                  <a href="#" className="text-accent underline">Privacy Policy</a>.
+                </span>
+              </label>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Landlord: Confirmation ──
+      case "confirmation": {
+        if (!rating || !boundPolicy || !formData.selectedPlan) return null;
+        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+        const tierData = rating.tiers[tierKey];
+        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+        const certData = getCertificateData();
+
+        return (
+          <div className="space-y-8">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+                <CheckCircle className="w-9 h-9 text-green-600" />
+              </div>
+              <h2 className="text-2xl md:text-3xl mb-2">You're Covered!</h2>
+              <p className="text-muted-foreground">Your policy has been bound successfully.</p>
+            </div>
+
+            {/* Policy details card */}
+            <div className="rounded-2xl border-2 border-accent/30 bg-card p-6 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Policy Number</p>
+                  <p className="text-xl font-bold text-foreground font-mono">{boundPolicy.policyNumber}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-green-500" /> Active
+                  </span>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Named Insured</p>
+                  <p className="font-medium text-foreground">{formData.legalFirstName} {formData.legalLastName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Plan</p>
+                  <p className="font-medium text-foreground">{tierLabel}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Premium</p>
+                  <p className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Property</p>
+                  <p className="font-medium text-foreground">{formData.address}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Effective Date</p>
+                  <p className="font-medium text-foreground">{boundPolicy.effectiveDate}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Expiry Date</p>
+                  <p className="font-medium text-foreground">{boundPolicy.expiryDate}</p>
+                </div>
+                {formData.additionalInsuredName && (
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">Additional Insured</p>
+                    <p className="font-medium text-foreground">{formData.additionalInsuredName} ({formData.additionalInsuredType})</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={() => certData && downloadCertificate(certData)}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-accent bg-accent/5 text-accent font-semibold hover:bg-accent/10 transition-colors"
+              >
+                <Download className="w-4 h-4" /> Download COI
+              </button>
+              <button
+                onClick={() => {
+                  if (formData.additionalInsuredEmail) {
+                    toast({ title: "Certificate sent", description: `COI emailed to ${formData.additionalInsuredEmail}` });
+                  } else {
+                    toast({ title: "No recipient", description: "No additional insured email was provided.", variant: "destructive" });
+                  }
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground font-semibold hover:border-accent/30 transition-colors"
+              >
+                <Mail className="w-4 h-4" /> Email to Lender
+              </button>
+              <button
+                onClick={() => navigate("/portal")}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground font-semibold hover:border-accent/30 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" /> Go to Portal
+              </button>
+            </div>
+
+            {/* Email confirmation notice */}
+            <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4">
+              <Mail className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Confirmation email sent</p>
+                <p className="text-xs text-muted-foreground">
+                  A copy of your policy documents and certificate of insurance has been sent to{" "}
+                  <span className="font-medium text-foreground">{formData.email}</span>.
+                  {formData.additionalInsuredEmail && (
+                    <> A certificate was also sent to <span className="font-medium text-foreground">{formData.additionalInsuredEmail}</span>.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       // ── Contact ──
       case "contact":
         return (
@@ -746,6 +1137,8 @@ const Quote = () => {
 
   const isHomeowner = formData.ownerType === "homeowner";
   const isQuoteResult = currentStepId === "quote-result";
+  const isBindCheckout = currentStepId === "bind-checkout";
+  const isConfirmation = currentStepId === "confirmation";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -753,9 +1146,9 @@ const Quote = () => {
       <main className="flex-1">
         <div className="container py-12 md:py-20">
           <div className={cn("mx-auto", isQuoteResult ? "max-w-4xl" : "max-w-2xl")}>
-            {!isHomeowner && <QuoteProgressBar steps={steps} currentStep={currentStep} />}
+            {!isHomeowner && !isConfirmation && <QuoteProgressBar steps={steps} currentStep={currentStep} />}
 
-            {address && !isHomeowner && (
+            {address && !isHomeowner && !isConfirmation && (
               <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2.5">
                 <Home className="h-4 w-4 text-accent" />
                 <span className="font-medium text-foreground">{address}</span>
@@ -764,16 +1157,24 @@ const Quote = () => {
 
             <div className="animate-fade-in-up">{renderStep()}</div>
 
-            {!isHomeowner && (
+            {!isHomeowner && !isConfirmation && (
               <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
                 <Button variant="outline" onClick={currentStep === 0 ? () => navigate("/") : handleBack} className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   {currentStep === 0 ? "Home" : "Back"}
                 </Button>
 
-                {currentStep < steps.length - 1 ? (
+                {isBindCheckout ? (
+                  <Button variant="hero" onClick={handleBindPolicy} disabled={!canProceed() || bindingInProgress} className="gap-2">
+                    {bindingInProgress ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                    ) : (
+                      <><Lock className="h-4 w-4" /> Bind & Pay</>
+                    )}
+                  </Button>
+                ) : currentStep < steps.length - 1 ? (
                   <Button variant="hero" onClick={handleNext} disabled={!canProceed()} className="gap-2">
-                    {currentStepId === "rental-details" ? "Get My Quote" : "Continue"} <ArrowRight className="h-4 w-4" />
+                    {currentStepId === "rental-details" ? "Get My Quote" : currentStepId === "quote-result" ? "Bind Coverage" : "Continue"} <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button variant="hero" onClick={handleSubmit} disabled={!canProceed()} className="gap-2">

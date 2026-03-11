@@ -28,8 +28,11 @@ import {
   TIER_DETAILS,
   buildTierFeatures,
   type RatingBreakdown,
+  rateTenantQuote,
+  UNIT_TYPE_OPTIONS,
+  type TenantRatingBreakdown,
 } from "@/lib/ratingEngine";
-import { LandlordPremiumBreakdown } from "@/components/PremiumBreakdown";
+import { LandlordPremiumBreakdown, TenantPremiumBreakdown } from "@/components/PremiumBreakdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { downloadCertificate, type CertificateData } from "@/lib/generateCertificate";
@@ -76,7 +79,8 @@ const TENANT_STEPS = [
   { id: "discounts", label: "Discounts" },
   { id: "coverage", label: "Coverage" },
   { id: "contact", label: "Contact" },
-  { id: "share-quote", label: "Share" },
+  { id: "bind-checkout", label: "Bind" },
+  { id: "confirmation", label: "Confirmed" },
 ];
 
 const LANDLORD_STEPS = [
@@ -159,6 +163,7 @@ const Quote = () => {
     effectiveDate: string;
     expiryDate: string;
   } | null>(null);
+  const [tenantRating, setTenantRating] = useState<TenantRatingBreakdown | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     address,
@@ -229,11 +234,14 @@ const Quote = () => {
   };
 
   const handleBindPolicy = async () => {
-    if (!rating || !formData.selectedPlan) return;
+    const isTenant = flow === "tenant";
+    const isLandlord = flow === "landlord";
+
+    if (isLandlord && (!rating || !formData.selectedPlan)) return;
+    if (isTenant && !tenantRating) return;
+
     setBindingInProgress(true);
 
-    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-    const tierData = rating.tiers[tierKey];
     const policyNumber = generatePolicyNumber();
     const effectiveDate = formData.coverageStartDate
       ? format(formData.coverageStartDate, "yyyy-MM-dd")
@@ -242,55 +250,86 @@ const Quote = () => {
       ? format(addYears(formData.coverageStartDate, 1), "yyyy-MM-dd")
       : format(addYears(new Date(), 1), "yyyy-MM-dd");
 
-    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
-
-    // Save to database if user is authenticated
     if (user) {
       try {
-        const { error } = await supabase.from("policies" as any).insert({
-          user_id: user.id,
-          policy_number: policyNumber,
-          status: "active",
-          address: formData.address,
-          property_type: formData.propertyType,
-          year_built: parseInt(formData.yearBuilt) || null,
-          sqft: parseInt(formData.sqft) || null,
-          units: parseInt(formData.units) || 1,
-          construction_type: formData.constructionType,
-          heating_type: formData.heating,
-          roof_type: formData.roof,
-          replacement_cost: parseInt(formData.replacementCost) || 400000,
-          tier: tierKey,
-          annual_premium: tierData.annual,
-          monthly_premium: tierData.monthly,
-          liability_limit: liabilityLabel,
-          rental_income_limit: rating.rentalIncomeLimits[tierKey],
-          effective_date: effectiveDate,
-          expiry_date: expiryDate,
-          insured_first_name: formData.legalFirstName,
-          insured_last_name: formData.legalLastName,
-          insured_email: formData.email,
-          insured_phone: formData.phone || null,
-          mailing_address: formData.mailingAddress,
-          additional_insured_name: formData.additionalInsuredName || null,
-          additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
-          additional_insured_email: formData.additionalInsuredEmail || null,
-          payment_method: "simulated",
-          payment_last_four: formData.cardNumber.slice(-4),
-        } as any);
+        let insertData: any;
 
-        if (error) {
-          console.error("Policy save error:", error);
-          toast({ title: "Policy saved locally", description: "Your policy was bound but could not be saved to your account.", variant: "destructive" });
+        if (isLandlord && rating) {
+          const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+          const tierData = rating.tiers[tierKey];
+          const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+
+          insertData = {
+            user_id: user.id,
+            policy_number: policyNumber,
+            status: "active",
+            address: formData.address,
+            property_type: formData.propertyType,
+            year_built: parseInt(formData.yearBuilt) || null,
+            sqft: parseInt(formData.sqft) || null,
+            units: parseInt(formData.units) || 1,
+            construction_type: formData.constructionType,
+            heating_type: formData.heating,
+            roof_type: formData.roof,
+            replacement_cost: parseInt(formData.replacementCost) || 400000,
+            tier: tierKey,
+            annual_premium: tierData.annual,
+            monthly_premium: tierData.monthly,
+            liability_limit: liabilityLabel,
+            rental_income_limit: rating.rentalIncomeLimits[tierKey],
+            effective_date: effectiveDate,
+            expiry_date: expiryDate,
+            insured_first_name: formData.legalFirstName,
+            insured_last_name: formData.legalLastName,
+            insured_email: formData.email,
+            insured_phone: formData.phone || null,
+            mailing_address: formData.mailingAddress,
+            additional_insured_name: formData.additionalInsuredName || null,
+            additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
+            additional_insured_email: formData.additionalInsuredEmail || null,
+            payment_method: "simulated",
+            payment_last_four: formData.cardNumber.slice(-4),
+          };
+        } else if (isTenant && tenantRating) {
+          const coverageLabel = formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1);
+          insertData = {
+            user_id: user.id,
+            policy_number: policyNumber,
+            status: "active",
+            address: formData.address,
+            property_type: "Tenant",
+            tier: formData.coverage,
+            annual_premium: tenantRating.annual,
+            monthly_premium: tenantRating.monthly,
+            liability_limit: "$1,000,000",
+            effective_date: effectiveDate,
+            expiry_date: expiryDate,
+            insured_first_name: formData.legalFirstName,
+            insured_last_name: formData.legalLastName,
+            insured_email: formData.email,
+            insured_phone: formData.phone || null,
+            mailing_address: formData.mailingAddress,
+            additional_insured_name: formData.additionalInsuredName || null,
+            additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
+            additional_insured_email: formData.additionalInsuredEmail || null,
+            payment_method: "simulated",
+            payment_last_four: formData.cardNumber.slice(-4),
+          };
+        }
+
+        if (insertData) {
+          const { error } = await supabase.from("policies" as any).insert(insertData as any);
+          if (error) {
+            console.error("Policy save error:", error);
+            toast({ title: "Policy saved locally", description: "Your policy was bound but could not be saved to your account.", variant: "destructive" });
+          }
         }
       } catch (err) {
         console.error("Policy save exception:", err);
       }
     }
 
-    // Simulate 1.5s processing
     await new Promise((r) => setTimeout(r, 1500));
-
     setBoundPolicy({ policyNumber, effectiveDate, expiryDate });
     setBindingInProgress(false);
     setCurrentStep((s) => s + 1);
@@ -339,11 +378,27 @@ const Quote = () => {
     }
 
     // Pre-fill bind legal name from contact info when moving to bind step
-    if (currentStepId === "quote-result") {
+    if (currentStepId === "quote-result" || currentStepId === "contact") {
       setFormData((prev) => ({
         ...prev,
         legalFirstName: prev.legalFirstName || prev.firstName,
         legalLastName: prev.legalLastName || prev.lastName,
+      }));
+    }
+
+    // Compute tenant rating and set default additional insured type when moving from contact to bind
+    if (flow === "tenant" && currentStepId === "contact") {
+      const tr = rateTenantQuote({
+        unitType: "apartment",
+        contentsValue: formData.coverage === "basic" ? 25000 : formData.coverage === "standard" ? 40000 : 60000,
+        liabilityLimit: "1000000",
+        deductible: 1000,
+        hasHighValueItems: false,
+      });
+      setTenantRating(tr);
+      setFormData((prev) => ({
+        ...prev,
+        additionalInsuredType: prev.additionalInsuredType === "Mortgage Lender" ? "Landlord" : prev.additionalInsuredType,
       }));
     }
 
@@ -399,26 +454,52 @@ const Quote = () => {
   const handleOwnerTypeSelect = (value: string) => updateField("ownerType", value);
 
   const getCertificateData = (): CertificateData | null => {
-    if (!rating || !boundPolicy || !formData.selectedPlan) return null;
-    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-    const tierData = rating.tiers[tierKey];
-    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
-    return {
-      policyNumber: boundPolicy.policyNumber,
-      insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
-      mailingAddress: formData.mailingAddress,
-      propertyAddress: formData.address,
-      effectiveDate: boundPolicy.effectiveDate,
-      expiryDate: boundPolicy.expiryDate,
-      tier: tierKey,
-      annualPremium: tierData.annual,
-      monthlyPremium: tierData.monthly,
-      liabilityLimit: liabilityLabel,
-      replacementCost: parseInt(formData.replacementCost) || 400000,
-      rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
-      additionalInsuredName: formData.additionalInsuredName || undefined,
-      additionalInsuredType: formData.additionalInsuredType || undefined,
-    };
+    if (!boundPolicy) return null;
+
+    // Landlord
+    if (flow === "landlord" && rating && formData.selectedPlan) {
+      const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+      const tierData = rating.tiers[tierKey];
+      const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+      return {
+        policyNumber: boundPolicy.policyNumber,
+        insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
+        mailingAddress: formData.mailingAddress,
+        propertyAddress: formData.address,
+        effectiveDate: boundPolicy.effectiveDate,
+        expiryDate: boundPolicy.expiryDate,
+        tier: tierKey,
+        annualPremium: tierData.annual,
+        monthlyPremium: tierData.monthly,
+        liabilityLimit: liabilityLabel,
+        replacementCost: parseInt(formData.replacementCost) || 400000,
+        rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
+        additionalInsuredName: formData.additionalInsuredName || undefined,
+        additionalInsuredType: formData.additionalInsuredType || undefined,
+      };
+    }
+
+    // Tenant
+    if (flow === "tenant" && tenantRating) {
+      return {
+        policyNumber: boundPolicy.policyNumber,
+        insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
+        mailingAddress: formData.mailingAddress,
+        propertyAddress: formData.address,
+        effectiveDate: boundPolicy.effectiveDate,
+        expiryDate: boundPolicy.expiryDate,
+        tier: formData.coverage,
+        annualPremium: tenantRating.annual,
+        monthlyPremium: tenantRating.monthly,
+        liabilityLimit: "$1,000,000",
+        replacementCost: 0,
+        rentalIncomeLimit: 0,
+        additionalInsuredName: formData.additionalInsuredName || undefined,
+        additionalInsuredType: formData.additionalInsuredType || undefined,
+      };
+    }
+
+    return null;
   };
 
   // ── Shared input class ──
@@ -800,13 +881,17 @@ const Quote = () => {
           </div>
         );
 
-      // ── Landlord: Bind / Checkout ──
+      // ── Bind / Checkout (Landlord + Tenant) ──
       case "bind-checkout": {
-        if (!rating || !formData.selectedPlan) return null;
-        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-        const tierData = rating.tiers[tierKey];
-        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
-        const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+        const isLandlordBind = flow === "landlord" && rating && formData.selectedPlan;
+        const isTenantBind = flow === "tenant" && tenantRating;
+        if (!isLandlordBind && !isTenantBind) return null;
+
+        const premiumAnnual = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual : tenantRating!.annual;
+        const premiumMonthly = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly : tenantRating!.monthly;
+        const coverageLabel = isLandlordBind
+          ? (formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)) + " Plan"
+          : (formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)) + " Tenant Coverage";
         const effectiveDate = formData.coverageStartDate ? format(formData.coverageStartDate, "PPP") : format(new Date(), "PPP");
 
         return (
@@ -822,15 +907,25 @@ const Quote = () => {
             {/* Coverage Summary */}
             <div className="rounded-xl border-2 border-accent/30 bg-accent/5 p-5 space-y-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Shield className="w-4 h-4 text-accent" /> {tierLabel} Plan — Coverage Summary
+                <Shield className="w-4 h-4 text-accent" /> {coverageLabel} — Coverage Summary
               </h3>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Property</span><span className="font-medium text-foreground">{formData.address}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{liabilityLabel}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{isTenantBind ? "Address" : "Property"}</span><span className="font-medium text-foreground">{formData.address}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${premiumMonthly}/mo (${premiumAnnual.toLocaleString()}/yr)</span></div>
+                {isLandlordBind && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{formData.selectedPlan === "basic" ? "$1,000,000" : formData.selectedPlan === "standard" ? "$2,000,000" : "$5,000,000"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating!.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"].toLocaleString()}</span></div>
+                  </>
+                )}
+                {isTenantBind && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">$1,000,000</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Coverage Type</span><span className="font-medium text-foreground">{formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)}</span></div>
+                  </>
+                )}
                 <div className="flex justify-between"><span className="text-muted-foreground">Effective</span><span className="font-medium text-foreground">{effectiveDate}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating.rentalIncomeLimits[tierKey].toLocaleString()}</span></div>
               </div>
             </div>
 
@@ -872,21 +967,31 @@ const Quote = () => {
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-accent" /> Additional Insured
-                <span className="text-xs font-normal text-muted-foreground">(optional — e.g. mortgage lender)</span>
+                <span className="text-xs font-normal text-muted-foreground">(optional — e.g. {isTenantBind ? "landlord, property manager" : "mortgage lender"})</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-foreground mb-1.5">Name / Organization</label>
                   <input type="text" value={formData.additionalInsuredName} onChange={(e) => updateField("additionalInsuredName", e.target.value)}
-                    placeholder="e.g. TD Bank, RBC Royal Bank" className={inputClass} />
+                    placeholder={isTenantBind ? "e.g. John Smith (Landlord)" : "e.g. TD Bank, RBC Royal Bank"} className={inputClass} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">Type</label>
                   <select value={formData.additionalInsuredType} onChange={(e) => updateField("additionalInsuredType", e.target.value)} className={selectClass}>
-                    <option value="Mortgage Lender">Mortgage Lender</option>
-                    <option value="Property Manager">Property Manager</option>
-                    <option value="Co-Owner">Co-Owner</option>
-                    <option value="Other">Other</option>
+                    {isTenantBind ? (
+                      <>
+                        <option value="Landlord">Landlord</option>
+                        <option value="Property Manager">Property Manager</option>
+                        <option value="Other">Other</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Mortgage Lender">Mortgage Lender</option>
+                        <option value="Property Manager">Property Manager</option>
+                        <option value="Co-Owner">Co-Owner</option>
+                        <option value="Other">Other</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -946,12 +1051,18 @@ const Quote = () => {
         );
       }
 
-      // ── Landlord: Confirmation ──
+      // ── Confirmation (Landlord + Tenant) ──
       case "confirmation": {
-        if (!rating || !boundPolicy || !formData.selectedPlan) return null;
-        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-        const tierData = rating.tiers[tierKey];
-        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+        if (!boundPolicy) return null;
+        const isLandlordConfirm = flow === "landlord" && rating && formData.selectedPlan;
+        const isTenantConfirm = flow === "tenant" && tenantRating;
+        if (!isLandlordConfirm && !isTenantConfirm) return null;
+
+        const confirmAnnual = isLandlordConfirm ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual : tenantRating!.annual;
+        const confirmMonthly = isLandlordConfirm ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly : tenantRating!.monthly;
+        const confirmPlanLabel = isLandlordConfirm
+          ? formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)
+          : formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1) + " Tenant";
         const certData = getCertificateData();
 
         return (
@@ -986,11 +1097,11 @@ const Quote = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Plan</p>
-                  <p className="font-medium text-foreground">{tierLabel}</p>
+                  <p className="font-medium text-foreground">{confirmPlanLabel}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Premium</p>
-                  <p className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</p>
+                  <p className="font-bold text-accent">${confirmMonthly}/mo (${confirmAnnual.toLocaleString()}/yr)</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Property</p>
@@ -1031,7 +1142,7 @@ const Quote = () => {
                 }}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground font-semibold hover:border-accent/30 transition-colors"
               >
-                <Mail className="w-4 h-4" /> Email to Lender
+                <Mail className="w-4 h-4" /> {isTenantConfirm ? "Email Certificate" : "Email to Lender"}
               </button>
               <button
                 onClick={() => navigate("/portal")}
@@ -1174,7 +1285,7 @@ const Quote = () => {
                   </Button>
                 ) : currentStep < steps.length - 1 ? (
                   <Button variant="hero" onClick={handleNext} disabled={!canProceed()} className="gap-2">
-                    {currentStepId === "rental-details" ? "Get My Quote" : currentStepId === "quote-result" ? "Bind Coverage" : "Continue"} <ArrowRight className="h-4 w-4" />
+                    {currentStepId === "rental-details" ? "Get My Quote" : currentStepId === "quote-result" ? "Bind Coverage" : currentStepId === "contact" && flow === "tenant" ? "Bind Coverage" : "Continue"} <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button variant="hero" onClick={handleSubmit} disabled={!canProceed()} className="gap-2">

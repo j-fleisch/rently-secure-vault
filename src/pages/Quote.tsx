@@ -163,6 +163,7 @@ const Quote = () => {
     effectiveDate: string;
     expiryDate: string;
   } | null>(null);
+  const [tenantRating, setTenantRating] = useState<TenantRatingBreakdown | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     address,

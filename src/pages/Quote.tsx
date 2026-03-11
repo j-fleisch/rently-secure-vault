@@ -1047,12 +1047,18 @@ const Quote = () => {
         );
       }
 
-      // ── Landlord: Confirmation ──
+      // ── Confirmation (Landlord + Tenant) ──
       case "confirmation": {
-        if (!rating || !boundPolicy || !formData.selectedPlan) return null;
-        const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-        const tierData = rating.tiers[tierKey];
-        const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+        if (!boundPolicy) return null;
+        const isLandlordConfirm = flow === "landlord" && rating && formData.selectedPlan;
+        const isTenantConfirm = flow === "tenant" && tenantRating;
+        if (!isLandlordConfirm && !isTenantConfirm) return null;
+
+        const confirmAnnual = isLandlordConfirm ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual : tenantRating!.annual;
+        const confirmMonthly = isLandlordConfirm ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly : tenantRating!.monthly;
+        const confirmPlanLabel = isLandlordConfirm
+          ? formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)
+          : formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1) + " Tenant";
         const certData = getCertificateData();
 
         return (

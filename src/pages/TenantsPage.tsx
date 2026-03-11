@@ -17,14 +17,7 @@ function estimatePremium(inputs: {
   return { low: r.low, mid: r.annual, high: r.high };
 }
 
-const UNIT_TYPES = [
-  { value: "apartment", label: "Apartment" },
-  { value: "condo", label: "Condo" },
-  { value: "basement", label: "Basement Unit" },
-  { value: "house", label: "House Rental" },
-  { value: "townhouse", label: "Townhouse" },
-  { value: "room", label: "Room / Shared" },
-];
+const UNIT_TYPES = UNIT_TYPE_OPTIONS;
 
 const CONTENTS_PRESETS = [
   { value: 15000, label: "$15K" },

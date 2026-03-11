@@ -28,14 +28,7 @@ function estimatePremium(inputs: {
   return { low: r.tiers.basic.annual, mid: r.tiers.standard.annual, high: r.tiers.premium.annual };
 }
 
-const PROPERTY_TYPES = [
-  { value: "detached", label: "Detached" },
-  { value: "semi", label: "Semi-Detached" },
-  { value: "townhouse", label: "Townhouse / Row" },
-  { value: "multi", label: "Multi-Unit (2-6)" },
-  { value: "condo", label: "Condo Unit" },
-  { value: "duplex", label: "Duplex" },
-];
+const PROPERTY_TYPES = LANDLORD_PROPERTY_TYPES;
 
 const COVERAGE_FEATURES = [
   {

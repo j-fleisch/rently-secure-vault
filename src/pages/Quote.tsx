@@ -596,7 +596,8 @@ const Quote = () => {
 
       // ── Landlord: Quote Result with Tier Cards ──
       case "quote-result":
-        if (!premiums) return null;
+        if (!rating) return null;
+        const rc = parseInt(formData.replacementCost) || 400000;
         return (
           <div className="space-y-8">
             <div className="text-center">
@@ -611,17 +612,21 @@ const Quote = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {COVERAGE_TIERS.map((tier) => (
-                <TierCard
-                  key={tier.key}
-                  tier={tier.name}
-                  price={premiums[tier.key]}
-                  features={tier.features(parseInt(formData.replacementCost) || 400000)}
-                  recommended={tier.recommended}
-                  selected={formData.selectedPlan === tier.key}
-                  onSelect={() => updateField("selectedPlan", tier.key)}
-                />
-              ))}
+              {(["basic", "standard", "premium"] as const).map((tierKey) => {
+                const detail = TIER_DETAILS[tierKey];
+                const tierResult = rating.tiers[tierKey];
+                return (
+                  <TierCard
+                    key={tierKey}
+                    tier={detail.name}
+                    price={tierResult.annual}
+                    features={buildTierFeatures(tierKey, rc, rating.rentalIncomeLimits)}
+                    recommended={detail.recommended}
+                    selected={formData.selectedPlan === tierKey}
+                    onSelect={() => updateField("selectedPlan", tierKey)}
+                  />
+                );
+              })}
             </div>
 
             {formData.selectedPlan && (
@@ -631,9 +636,9 @@ const Quote = () => {
                     Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
                   </p>
                   <p className="text-2xl font-extrabold text-accent">
-                    ${Math.round(premiums[formData.selectedPlan as keyof PremiumTiers] / 12).toLocaleString()}/mo
+                    ${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly.toLocaleString()}/mo
                     <span className="text-sm font-normal text-accent/60 ml-2">
-                      (${premiums[formData.selectedPlan as keyof PremiumTiers].toLocaleString()}/yr)
+                      (${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual.toLocaleString()}/yr)
                     </span>
                   </p>
                 </div>

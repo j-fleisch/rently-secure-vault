@@ -137,40 +137,56 @@ export interface RatingBreakdown {
 
 export function rateLandlordQuote(input: LandlordQuoteInput): RatingBreakdown {
   const rc = input.replacementCost || 400000;
-  let base = rc * 0.0035;
+  const baseRate = 3.50; // per $1,000 of RC
+  const basePremium = rc * 0.0035;
+  let base = basePremium;
 
-  // Unit multiplier
-  const units = Math.min(input.units || 1, 4);
-  base *= UNIT_MULTIPLIERS[units] || DEFAULT_UNIT_MULTIPLIER;
+  // Track individual factors
+  const unitFactor = UNIT_MULTIPLIERS[Math.min(input.units || 1, 4)] || DEFAULT_UNIT_MULTIPLIER;
+  base *= unitFactor;
 
-  // Property type factor
-  base *= PROPERTY_TYPE_FACTORS[input.propertyType] || 1.0;
+  const propertyFactor = PROPERTY_TYPE_FACTORS[input.propertyType] || 1.0;
+  base *= propertyFactor;
 
-  // Construction factor
-  base *= CONSTRUCTION_FACTORS[input.constructionType] || 1.0;
+  const constructionFactor = CONSTRUCTION_FACTORS[input.constructionType] || 1.0;
+  base *= constructionFactor;
 
-  // Heating factor
-  base *= HEATING_FACTORS[input.heatingType] || 1.0;
+  const heatingFactor = HEATING_FACTORS[input.heatingType] || 1.0;
+  base *= heatingFactor;
 
-  // Roof factor
-  base *= ROOF_FACTORS[input.roofType] || 1.0;
+  const roofFactor = ROOF_FACTORS[input.roofType] || 1.0;
+  base *= roofFactor;
 
   // Age surcharge
   const age = 2026 - (input.yearBuilt || 1990);
-  if (age > 50) base *= 1.25;
-  else if (age > 30) base *= 1.12;
-  else if (age < 5) base *= 0.92;
+  let ageFactor = 1.0;
+  if (age > 50) ageFactor = 1.25;
+  else if (age > 30) ageFactor = 1.12;
+  else if (age < 5) ageFactor = 0.92;
+  base *= ageFactor;
 
   // Claims surcharge
-  if ((input.claimsHistory || 0) > 0) base *= 1 + input.claimsHistory * 0.15;
+  const claimsFactor = (input.claimsHistory || 0) > 0 ? 1 + input.claimsHistory * 0.15 : 1.0;
+  base *= claimsFactor;
 
   // Vacancy surcharge
-  if (input.isVacant) base *= 1.35;
+  const vacancyFactor = input.isVacant ? 1.35 : 1.0;
+  base *= vacancyFactor;
 
   // Short-term rental surcharge
-  if (input.shortTermRental) base *= 1.2;
+  const strFactor = input.shortTermRental ? 1.2 : 1.0;
+  base *= strFactor;
 
-  const basicAnnual = Math.round(base);
+  // Size factor (optional)
+  let sizeFactor = 1.0;
+  const sqft = input.sqft || 1200;
+  if (sqft > 3000) sizeFactor = 1.08;
+  else if (sqft > 2000) sizeFactor = 1.04;
+  else if (sqft < 800) sizeFactor = 0.95;
+  base *= sizeFactor;
+
+  const calculatedPremium = Math.round(base);
+  const basicAnnual = calculatedPremium;
   const standardAnnual = Math.round(base * 1.25);
   const premiumAnnual = Math.round(base * 1.55);
 
@@ -188,6 +204,19 @@ export function rateLandlordQuote(input: LandlordQuoteInput): RatingBreakdown {
       standard: mri * 18,
       premium:  mri * 24,
     },
+    // Factor breakdown
+    baseRate,
+    basePremium: Math.round(basePremium),
+    ageFactor,
+    unitFactor,
+    constructionFactor,
+    heatingFactor,
+    roofFactor,
+    vacancyFactor,
+    claimsFactor,
+    strFactor,
+    sizeFactor,
+    calculatedPremium,
   };
 }
 

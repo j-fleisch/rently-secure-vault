@@ -963,13 +963,13 @@ const Quote = () => {
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-accent" /> Additional Insured
-                <span className="text-xs font-normal text-muted-foreground">(optional — e.g. mortgage lender)</span>
+                <span className="text-xs font-normal text-muted-foreground">(optional — e.g. {isTenantBind ? "landlord, property manager" : "mortgage lender"})</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-foreground mb-1.5">Name / Organization</label>
                   <input type="text" value={formData.additionalInsuredName} onChange={(e) => updateField("additionalInsuredName", e.target.value)}
-                    placeholder="e.g. TD Bank, RBC Royal Bank" className={inputClass} />
+                    placeholder={isTenantBind ? "e.g. John Smith (Landlord)" : "e.g. TD Bank, RBC Royal Bank"} className={inputClass} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">Type</label>

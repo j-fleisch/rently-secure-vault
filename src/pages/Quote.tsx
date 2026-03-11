@@ -974,10 +974,20 @@ const Quote = () => {
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">Type</label>
                   <select value={formData.additionalInsuredType} onChange={(e) => updateField("additionalInsuredType", e.target.value)} className={selectClass}>
-                    <option value="Mortgage Lender">Mortgage Lender</option>
-                    <option value="Property Manager">Property Manager</option>
-                    <option value="Co-Owner">Co-Owner</option>
-                    <option value="Other">Other</option>
+                    {isTenantBind ? (
+                      <>
+                        <option value="Landlord">Landlord</option>
+                        <option value="Property Manager">Property Manager</option>
+                        <option value="Other">Other</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Mortgage Lender">Mortgage Lender</option>
+                        <option value="Property Manager">Property Manager</option>
+                        <option value="Co-Owner">Co-Owner</option>
+                        <option value="Other">Other</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>

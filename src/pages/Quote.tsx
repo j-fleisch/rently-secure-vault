@@ -430,7 +430,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Property Type ✦</label>
                 <select value={formData.propertyType} onChange={(e) => updateField("propertyType", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {propertyTypeOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {PROPERTY_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Year Built */}

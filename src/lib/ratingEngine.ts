@@ -120,6 +120,19 @@ export interface RatingBreakdown {
     standard: number;
     premium: number;
   };
+  // Factor breakdown for transparency component
+  baseRate: number;
+  basePremium: number;
+  ageFactor: number;
+  unitFactor: number;
+  constructionFactor: number;
+  heatingFactor: number;
+  roofFactor: number;
+  vacancyFactor: number;
+  claimsFactor: number;
+  strFactor: number;
+  sizeFactor: number;
+  calculatedPremium: number;
 }
 
 export function rateLandlordQuote(input: LandlordQuoteInput): RatingBreakdown {

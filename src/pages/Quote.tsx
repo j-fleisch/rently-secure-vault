@@ -474,7 +474,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Heating ✦</label>
                 <select value={formData.heating} onChange={(e) => updateField("heating", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {heatingOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {HEATING_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Roof */}

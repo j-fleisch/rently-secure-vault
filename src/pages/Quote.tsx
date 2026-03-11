@@ -378,12 +378,24 @@ const Quote = () => {
     }
 
     // Pre-fill bind legal name from contact info when moving to bind step
-    if (currentStepId === "quote-result") {
+    if (currentStepId === "quote-result" || currentStepId === "contact") {
       setFormData((prev) => ({
         ...prev,
         legalFirstName: prev.legalFirstName || prev.firstName,
         legalLastName: prev.legalLastName || prev.lastName,
       }));
+    }
+
+    // Compute tenant rating when moving from contact to bind
+    if (flow === "tenant" && currentStepId === "contact") {
+      const tr = rateTenantQuote({
+        unitType: "apartment",
+        contentsValue: formData.coverage === "basic" ? 25000 : formData.coverage === "standard" ? 40000 : 60000,
+        liabilityLimit: "1000000",
+        deductible: 1000,
+        hasHighValueItems: false,
+      });
+      setTenantRating(tr);
     }
 
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);

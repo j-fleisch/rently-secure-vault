@@ -28,6 +28,7 @@ import {
   buildTierFeatures,
   type RatingBreakdown,
 } from "@/lib/ratingEngine";
+import { LandlordPremiumBreakdown } from "@/components/PremiumBreakdown";
 
 // ── Owner types ──
 const ownerTypes = [

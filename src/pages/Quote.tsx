@@ -1281,7 +1281,7 @@ const Quote = () => {
                   </Button>
                 ) : currentStep < steps.length - 1 ? (
                   <Button variant="hero" onClick={handleNext} disabled={!canProceed()} className="gap-2">
-                    {currentStepId === "rental-details" ? "Get My Quote" : currentStepId === "quote-result" ? "Bind Coverage" : "Continue"} <ArrowRight className="h-4 w-4" />
+                    {currentStepId === "rental-details" ? "Get My Quote" : currentStepId === "quote-result" ? "Bind Coverage" : currentStepId === "contact" && flow === "tenant" ? "Bind Coverage" : "Continue"} <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
                   <Button variant="hero" onClick={handleSubmit} disabled={!canProceed()} className="gap-2">

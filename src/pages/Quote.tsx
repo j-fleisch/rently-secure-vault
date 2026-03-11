@@ -1138,7 +1138,7 @@ const Quote = () => {
                 }}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground font-semibold hover:border-accent/30 transition-colors"
               >
-                <Mail className="w-4 h-4" /> Email to Lender
+                <Mail className="w-4 h-4" /> {isTenantConfirm ? "Email Certificate" : "Email to Lender"}
               </button>
               <button
                 onClick={() => navigate("/portal")}

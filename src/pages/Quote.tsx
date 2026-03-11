@@ -1093,11 +1093,11 @@ const Quote = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Plan</p>
-                  <p className="font-medium text-foreground">{tierLabel}</p>
+                  <p className="font-medium text-foreground">{confirmPlanLabel}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Premium</p>
-                  <p className="font-bold text-accent">${tierData.monthly}/mo (${tierData.annual.toLocaleString()}/yr)</p>
+                  <p className="font-bold text-accent">${confirmMonthly}/mo (${confirmAnnual.toLocaleString()}/yr)</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Property</p>

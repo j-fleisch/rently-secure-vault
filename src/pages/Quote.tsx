@@ -386,7 +386,7 @@ const Quote = () => {
       }));
     }
 
-    // Compute tenant rating when moving from contact to bind
+    // Compute tenant rating and set default additional insured type when moving from contact to bind
     if (flow === "tenant" && currentStepId === "contact") {
       const tr = rateTenantQuote({
         unitType: "apartment",
@@ -396,6 +396,10 @@ const Quote = () => {
         hasHighValueItems: false,
       });
       setTenantRating(tr);
+      setFormData((prev) => ({
+        ...prev,
+        additionalInsuredType: prev.additionalInsuredType === "Mortgage Lender" ? "Landlord" : prev.additionalInsuredType,
+      }));
     }
 
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);

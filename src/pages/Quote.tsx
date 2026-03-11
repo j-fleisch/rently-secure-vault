@@ -877,9 +877,17 @@ const Quote = () => {
           </div>
         );
 
-      // ── Landlord: Bind / Checkout ──
+      // ── Bind / Checkout (Landlord + Tenant) ──
       case "bind-checkout": {
-        if (!rating || !formData.selectedPlan) return null;
+        const isLandlordBind = flow === "landlord" && rating && formData.selectedPlan;
+        const isTenantBind = flow === "tenant" && tenantRating;
+        if (!isLandlordBind && !isTenantBind) return null;
+
+        const premiumAnnual = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual : tenantRating!.annual;
+        const premiumMonthly = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly : tenantRating!.monthly;
+        const coverageLabel = isLandlordBind
+          ? (formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)) + " Plan"
+          : (formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)) + " Tenant Coverage";
         const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
         const tierData = rating.tiers[tierKey];
         const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);

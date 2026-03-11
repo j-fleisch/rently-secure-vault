@@ -76,7 +76,8 @@ const TENANT_STEPS = [
   { id: "discounts", label: "Discounts" },
   { id: "coverage", label: "Coverage" },
   { id: "contact", label: "Contact" },
-  { id: "share-quote", label: "Share" },
+  { id: "bind-checkout", label: "Bind" },
+  { id: "confirmation", label: "Confirmed" },
 ];
 
 const LANDLORD_STEPS = [

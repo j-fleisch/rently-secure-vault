@@ -57,27 +57,7 @@ const tenantCoverageOptions = [
   { value: "comprehensive", label: "Comprehensive", description: "Full coverage including sewer backup & identity theft", price: "From $40/mo" },
 ];
 
-// ── Landlord property detail options ──
-const propertyTypeOptions = [
-  "Detached", "Semi-Detached", "Townhouse / Row", "Multi-Unit Residential",
-  "Condo", "Duplex", "Triplex",
-];
-const constructionOptions = [
-  "Brick", "Brick Veneer", "Frame with Vinyl Siding", "Frame with Aluminum Siding",
-  "Concrete Block", "Stone", "Stucco", "Other",
-];
-const heatingOptions = [
-  "Forced Air Gas", "Forced Air Electric", "Baseboard Electric",
-  "Hot Water Radiator", "Radiant In-Floor", "Heat Pump", "Other",
-];
-const roofOptions = [
-  "Asphalt Shingle", "Metal", "Flat (Modified Bitumen)", "Flat (EPDM/TPO)",
-  "Cedar Shake", "Slate", "Tile", "Other",
-];
-const basementOptions = [
-  "Full, Finished", "Full, Unfinished", "Full, Partially Finished",
-  "Partial, Finished", "Partial, Unfinished", "Crawl Space", "None",
-];
+// Dropdown options imported from ratingEngine
 
 const landlordInsuredOptions = [
   { value: "yes", label: "Yes", description: "I currently have landlord insurance" },

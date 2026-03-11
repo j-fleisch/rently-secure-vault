@@ -490,7 +490,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Basement ✦</label>
                 <select value={formData.basement} onChange={(e) => updateField("basement", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {basementOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {BASEMENT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Replacement Cost */}

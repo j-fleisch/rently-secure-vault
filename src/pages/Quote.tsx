@@ -482,7 +482,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Roof ✦</label>
                 <select value={formData.roof} onChange={(e) => updateField("roof", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {roofOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {ROOF_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Basement */}

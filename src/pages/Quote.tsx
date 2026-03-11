@@ -17,7 +17,17 @@ import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { lookupProperty, type PropertyData } from "@/lib/propertyData";
-import { calcPremium, COVERAGE_TIERS, type PremiumTiers } from "@/lib/premiumEngine";
+import {
+  rateLandlordQuote,
+  PROPERTY_TYPE_OPTIONS,
+  CONSTRUCTION_OPTIONS,
+  HEATING_OPTIONS,
+  ROOF_OPTIONS,
+  BASEMENT_OPTIONS,
+  TIER_DETAILS,
+  buildTierFeatures,
+  type RatingBreakdown,
+} from "@/lib/ratingEngine";
 
 // ── Owner types ──
 const ownerTypes = [

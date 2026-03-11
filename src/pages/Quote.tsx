@@ -631,19 +631,39 @@ const Quote = () => {
             </div>
 
             {formData.selectedPlan && (
-              <div className="bg-accent/10 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-accent">
-                    Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
-                  </p>
-                  <p className="text-2xl font-extrabold text-accent">
-                    ${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly.toLocaleString()}/mo
-                    <span className="text-sm font-normal text-accent/60 ml-2">
-                      (${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual.toLocaleString()}/yr)
-                    </span>
-                  </p>
+              <>
+                <div className="bg-accent/10 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-accent">
+                      Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
+                    </p>
+                    <p className="text-2xl font-extrabold text-accent">
+                      ${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly.toLocaleString()}/mo
+                      <span className="text-sm font-normal text-accent/60 ml-2">
+                        (${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual.toLocaleString()}/yr)
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
+                <LandlordPremiumBreakdown
+                  input={{
+                    propertyType: formData.propertyType,
+                    yearBuilt: parseInt(formData.yearBuilt) || 1990,
+                    sqft: parseInt(formData.sqft) || 1200,
+                    units: parseInt(formData.units) || 1,
+                    constructionType: formData.constructionType,
+                    heatingType: formData.heating,
+                    roofType: formData.roof,
+                    replacementCost: parseInt(formData.replacementCost.replace(/,/g, '')) || 400000,
+                    monthlyRentalIncome: parseInt((formData.rentalIncome || '0').replace(/,/g, '')) || 0,
+                    isVacant: formData.isVacant === true || formData.isVacant === "true",
+                    claimsHistory: parseInt(formData.claimsHistory) || 0,
+                    shortTermRental: formData.shortTermRental === true || formData.shortTermRental === "true",
+                  }}
+                  rating={rating}
+                  selectedTier={formData.selectedPlan as "basic" | "standard" | "premium"}
+                />
+              </>
             )}
           </div>
         );

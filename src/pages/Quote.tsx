@@ -450,26 +450,52 @@ const Quote = () => {
   const handleOwnerTypeSelect = (value: string) => updateField("ownerType", value);
 
   const getCertificateData = (): CertificateData | null => {
-    if (!rating || !boundPolicy || !formData.selectedPlan) return null;
-    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-    const tierData = rating.tiers[tierKey];
-    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
-    return {
-      policyNumber: boundPolicy.policyNumber,
-      insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
-      mailingAddress: formData.mailingAddress,
-      propertyAddress: formData.address,
-      effectiveDate: boundPolicy.effectiveDate,
-      expiryDate: boundPolicy.expiryDate,
-      tier: tierKey,
-      annualPremium: tierData.annual,
-      monthlyPremium: tierData.monthly,
-      liabilityLimit: liabilityLabel,
-      replacementCost: parseInt(formData.replacementCost) || 400000,
-      rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
-      additionalInsuredName: formData.additionalInsuredName || undefined,
-      additionalInsuredType: formData.additionalInsuredType || undefined,
-    };
+    if (!boundPolicy) return null;
+
+    // Landlord
+    if (flow === "landlord" && rating && formData.selectedPlan) {
+      const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+      const tierData = rating.tiers[tierKey];
+      const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+      return {
+        policyNumber: boundPolicy.policyNumber,
+        insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
+        mailingAddress: formData.mailingAddress,
+        propertyAddress: formData.address,
+        effectiveDate: boundPolicy.effectiveDate,
+        expiryDate: boundPolicy.expiryDate,
+        tier: tierKey,
+        annualPremium: tierData.annual,
+        monthlyPremium: tierData.monthly,
+        liabilityLimit: liabilityLabel,
+        replacementCost: parseInt(formData.replacementCost) || 400000,
+        rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
+        additionalInsuredName: formData.additionalInsuredName || undefined,
+        additionalInsuredType: formData.additionalInsuredType || undefined,
+      };
+    }
+
+    // Tenant
+    if (flow === "tenant" && tenantRating) {
+      return {
+        policyNumber: boundPolicy.policyNumber,
+        insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
+        mailingAddress: formData.mailingAddress,
+        propertyAddress: formData.address,
+        effectiveDate: boundPolicy.effectiveDate,
+        expiryDate: boundPolicy.expiryDate,
+        tier: formData.coverage,
+        annualPremium: tenantRating.annual,
+        monthlyPremium: tenantRating.monthly,
+        liabilityLimit: "$1,000,000",
+        replacementCost: 0,
+        rentalIncomeLimit: 0,
+        additionalInsuredName: formData.additionalInsuredName || undefined,
+        additionalInsuredType: formData.additionalInsuredType || undefined,
+      };
+    }
+
+    return null;
   };
 
   // ── Shared input class ──

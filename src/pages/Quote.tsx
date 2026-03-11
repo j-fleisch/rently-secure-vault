@@ -234,11 +234,14 @@ const Quote = () => {
   };
 
   const handleBindPolicy = async () => {
-    if (!rating || !formData.selectedPlan) return;
+    const isTenant = flow === "tenant";
+    const isLandlord = flow === "landlord";
+
+    if (isLandlord && (!rating || !formData.selectedPlan)) return;
+    if (isTenant && !tenantRating) return;
+
     setBindingInProgress(true);
 
-    const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-    const tierData = rating.tiers[tierKey];
     const policyNumber = generatePolicyNumber();
     const effectiveDate = formData.coverageStartDate
       ? format(formData.coverageStartDate, "yyyy-MM-dd")
@@ -247,55 +250,86 @@ const Quote = () => {
       ? format(addYears(formData.coverageStartDate, 1), "yyyy-MM-dd")
       : format(addYears(new Date(), 1), "yyyy-MM-dd");
 
-    const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
-
-    // Save to database if user is authenticated
     if (user) {
       try {
-        const { error } = await supabase.from("policies" as any).insert({
-          user_id: user.id,
-          policy_number: policyNumber,
-          status: "active",
-          address: formData.address,
-          property_type: formData.propertyType,
-          year_built: parseInt(formData.yearBuilt) || null,
-          sqft: parseInt(formData.sqft) || null,
-          units: parseInt(formData.units) || 1,
-          construction_type: formData.constructionType,
-          heating_type: formData.heating,
-          roof_type: formData.roof,
-          replacement_cost: parseInt(formData.replacementCost) || 400000,
-          tier: tierKey,
-          annual_premium: tierData.annual,
-          monthly_premium: tierData.monthly,
-          liability_limit: liabilityLabel,
-          rental_income_limit: rating.rentalIncomeLimits[tierKey],
-          effective_date: effectiveDate,
-          expiry_date: expiryDate,
-          insured_first_name: formData.legalFirstName,
-          insured_last_name: formData.legalLastName,
-          insured_email: formData.email,
-          insured_phone: formData.phone || null,
-          mailing_address: formData.mailingAddress,
-          additional_insured_name: formData.additionalInsuredName || null,
-          additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
-          additional_insured_email: formData.additionalInsuredEmail || null,
-          payment_method: "simulated",
-          payment_last_four: formData.cardNumber.slice(-4),
-        } as any);
+        let insertData: any;
 
-        if (error) {
-          console.error("Policy save error:", error);
-          toast({ title: "Policy saved locally", description: "Your policy was bound but could not be saved to your account.", variant: "destructive" });
+        if (isLandlord && rating) {
+          const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
+          const tierData = rating.tiers[tierKey];
+          const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+
+          insertData = {
+            user_id: user.id,
+            policy_number: policyNumber,
+            status: "active",
+            address: formData.address,
+            property_type: formData.propertyType,
+            year_built: parseInt(formData.yearBuilt) || null,
+            sqft: parseInt(formData.sqft) || null,
+            units: parseInt(formData.units) || 1,
+            construction_type: formData.constructionType,
+            heating_type: formData.heating,
+            roof_type: formData.roof,
+            replacement_cost: parseInt(formData.replacementCost) || 400000,
+            tier: tierKey,
+            annual_premium: tierData.annual,
+            monthly_premium: tierData.monthly,
+            liability_limit: liabilityLabel,
+            rental_income_limit: rating.rentalIncomeLimits[tierKey],
+            effective_date: effectiveDate,
+            expiry_date: expiryDate,
+            insured_first_name: formData.legalFirstName,
+            insured_last_name: formData.legalLastName,
+            insured_email: formData.email,
+            insured_phone: formData.phone || null,
+            mailing_address: formData.mailingAddress,
+            additional_insured_name: formData.additionalInsuredName || null,
+            additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
+            additional_insured_email: formData.additionalInsuredEmail || null,
+            payment_method: "simulated",
+            payment_last_four: formData.cardNumber.slice(-4),
+          };
+        } else if (isTenant && tenantRating) {
+          const coverageLabel = formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1);
+          insertData = {
+            user_id: user.id,
+            policy_number: policyNumber,
+            status: "active",
+            address: formData.address,
+            property_type: "Tenant",
+            tier: formData.coverage,
+            annual_premium: tenantRating.annual,
+            monthly_premium: tenantRating.monthly,
+            liability_limit: "$1,000,000",
+            effective_date: effectiveDate,
+            expiry_date: expiryDate,
+            insured_first_name: formData.legalFirstName,
+            insured_last_name: formData.legalLastName,
+            insured_email: formData.email,
+            insured_phone: formData.phone || null,
+            mailing_address: formData.mailingAddress,
+            additional_insured_name: formData.additionalInsuredName || null,
+            additional_insured_type: formData.additionalInsuredName ? formData.additionalInsuredType : null,
+            additional_insured_email: formData.additionalInsuredEmail || null,
+            payment_method: "simulated",
+            payment_last_four: formData.cardNumber.slice(-4),
+          };
+        }
+
+        if (insertData) {
+          const { error } = await supabase.from("policies" as any).insert(insertData as any);
+          if (error) {
+            console.error("Policy save error:", error);
+            toast({ title: "Policy saved locally", description: "Your policy was bound but could not be saved to your account.", variant: "destructive" });
+          }
         }
       } catch (err) {
         console.error("Policy save exception:", err);
       }
     }
 
-    // Simulate 1.5s processing
     await new Promise((r) => setTimeout(r, 1500));
-
     setBoundPolicy({ policyNumber, effectiveDate, expiryDate });
     setBindingInProgress(false);
     setCurrentStep((s) => s + 1);

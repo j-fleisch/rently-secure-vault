@@ -308,14 +308,37 @@ export interface TenantRating {
   high: number;
 }
 
-export function rateTenantQuote(input: TenantQuoteInput): TenantRating {
-  let base = (input.contentsValue || 30000) * 0.012;
+export interface TenantRatingBreakdown extends TenantRating {
+  contentsRate: number;
+  basePremium: number;
+  unitFactor: number;
+  deductibleFactor: number;
+  liabilityAddon: number;
+}
+
+const DEDUCTIBLE_FACTORS: Record<number, number> = {
+  500: 1.0,
+  1000: 0.90,
+  2500: 0.80,
+};
+
+export function rateTenantQuote(input: TenantQuoteInput): TenantRatingBreakdown {
+  const contentsRate = 12.00; // per $1,000 of contents
+  const contentsValue = input.contentsValue || 30000;
+  const basePremium = contentsValue * 0.012;
+  let base = basePremium;
 
   // Unit type factor
-  base *= TENANT_UNIT_FACTORS[input.unitType] || 1.0;
+  const unitFactor = TENANT_UNIT_FACTORS[input.unitType] || 1.0;
+  base *= unitFactor;
+
+  // Deductible factor
+  const deductibleFactor = DEDUCTIBLE_FACTORS[input.deductible] || 1.0;
+  base *= deductibleFactor;
 
   // Liability adder
-  base += LIABILITY_ADDERS[input.liabilityLimit] || 0;
+  const liabilityAddon = LIABILITY_ADDERS[input.liabilityLimit] || 0;
+  base += liabilityAddon;
 
   // High-value items
   if (input.hasHighValueItems) base *= 1.15;
@@ -329,5 +352,10 @@ export function rateTenantQuote(input: TenantQuoteInput): TenantRating {
     monthly: Math.round(annual / 12),
     low: Math.round(annual * 0.85),
     high: Math.round(annual * 1.15),
+    contentsRate,
+    basePremium: Math.round(basePremium),
+    unitFactor,
+    deductibleFactor,
+    liabilityAddon,
   };
 }

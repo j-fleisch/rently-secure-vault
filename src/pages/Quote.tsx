@@ -17,7 +17,17 @@ import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { lookupProperty, type PropertyData } from "@/lib/propertyData";
-import { calcPremium, COVERAGE_TIERS, type PremiumTiers } from "@/lib/premiumEngine";
+import {
+  rateLandlordQuote,
+  PROPERTY_TYPE_OPTIONS,
+  CONSTRUCTION_OPTIONS,
+  HEATING_OPTIONS,
+  ROOF_OPTIONS,
+  BASEMENT_OPTIONS,
+  TIER_DETAILS,
+  buildTierFeatures,
+  type RatingBreakdown,
+} from "@/lib/ratingEngine";
 
 // ── Owner types ──
 const ownerTypes = [
@@ -47,27 +57,7 @@ const tenantCoverageOptions = [
   { value: "comprehensive", label: "Comprehensive", description: "Full coverage including sewer backup & identity theft", price: "From $40/mo" },
 ];
 
-// ── Landlord property detail options ──
-const propertyTypeOptions = [
-  "Detached", "Semi-Detached", "Townhouse / Row", "Multi-Unit Residential",
-  "Condo", "Duplex", "Triplex",
-];
-const constructionOptions = [
-  "Brick", "Brick Veneer", "Frame with Vinyl Siding", "Frame with Aluminum Siding",
-  "Concrete Block", "Stone", "Stucco", "Other",
-];
-const heatingOptions = [
-  "Forced Air Gas", "Forced Air Electric", "Baseboard Electric",
-  "Hot Water Radiator", "Radiant In-Floor", "Heat Pump", "Other",
-];
-const roofOptions = [
-  "Asphalt Shingle", "Metal", "Flat (Modified Bitumen)", "Flat (EPDM/TPO)",
-  "Cedar Shake", "Slate", "Tile", "Other",
-];
-const basementOptions = [
-  "Full, Finished", "Full, Unfinished", "Full, Partially Finished",
-  "Partial, Finished", "Partial, Unfinished", "Crawl Space", "None",
-];
+// Dropdown options imported from ratingEngine
 
 const landlordInsuredOptions = [
   { value: "yes", label: "Yes", description: "I currently have landlord insurance" },
@@ -137,7 +127,7 @@ const Quote = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [partnerEmails, setPartnerEmails] = useState<string[]>([""]);
   const [propertyLoading, setPropertyLoading] = useState(false);
-  const [premiums, setPremiums] = useState<PremiumTiers | null>(null);
+  const [rating, setRating] = useState<RatingBreakdown | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     address,
@@ -217,18 +207,23 @@ const Quote = () => {
       return;
     }
 
-    // When moving to quote-result, calculate premiums
+    // When moving to quote-result, calculate premiums via rating engine
     if (currentStepId === "rental-details") {
-      const p = calcPremium({
-        replacementCost: parseInt(formData.replacementCost) || 400000,
-        units: parseInt(formData.units) || 1,
+      const r = rateLandlordQuote({
+        propertyType: formData.propertyType,
         yearBuilt: parseInt(formData.yearBuilt) || 1990,
-        heating: formData.heating,
-        claimsHistory: formData.claimsHistory,
+        sqft: parseInt(formData.sqft) || 1200,
+        units: parseInt(formData.units) || 1,
+        constructionType: formData.constructionType,
+        heatingType: formData.heating,
+        roofType: formData.roof,
+        replacementCost: parseInt(formData.replacementCost) || 400000,
+        monthlyRentalIncome: parseInt(formData.rentalIncome) || 0,
         isVacant: formData.isVacant,
+        claimsHistory: formData.claimsHistory,
         shortTermRental: formData.shortTermRental,
       });
-      setPremiums(p);
+      setRating(r);
     }
 
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);
@@ -435,7 +430,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Property Type ✦</label>
                 <select value={formData.propertyType} onChange={(e) => updateField("propertyType", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {propertyTypeOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {PROPERTY_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Year Built */}
@@ -471,7 +466,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Construction ✦</label>
                 <select value={formData.constructionType} onChange={(e) => updateField("constructionType", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {constructionOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {CONSTRUCTION_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Heating */}
@@ -479,7 +474,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Heating ✦</label>
                 <select value={formData.heating} onChange={(e) => updateField("heating", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {heatingOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {HEATING_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Roof */}
@@ -487,7 +482,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Roof ✦</label>
                 <select value={formData.roof} onChange={(e) => updateField("roof", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {roofOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {ROOF_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Basement */}
@@ -495,7 +490,7 @@ const Quote = () => {
                 <label className="block text-sm font-semibold text-foreground mb-1">Basement ✦</label>
                 <select value={formData.basement} onChange={(e) => updateField("basement", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
-                  {basementOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {BASEMENT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               {/* Replacement Cost */}
@@ -601,7 +596,8 @@ const Quote = () => {
 
       // ── Landlord: Quote Result with Tier Cards ──
       case "quote-result":
-        if (!premiums) return null;
+        if (!rating) return null;
+        const rc = parseInt(formData.replacementCost) || 400000;
         return (
           <div className="space-y-8">
             <div className="text-center">
@@ -616,17 +612,21 @@ const Quote = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {COVERAGE_TIERS.map((tier) => (
-                <TierCard
-                  key={tier.key}
-                  tier={tier.name}
-                  price={premiums[tier.key]}
-                  features={tier.features(parseInt(formData.replacementCost) || 400000)}
-                  recommended={tier.recommended}
-                  selected={formData.selectedPlan === tier.key}
-                  onSelect={() => updateField("selectedPlan", tier.key)}
-                />
-              ))}
+              {(["basic", "standard", "premium"] as const).map((tierKey) => {
+                const detail = TIER_DETAILS[tierKey];
+                const tierResult = rating.tiers[tierKey];
+                return (
+                  <TierCard
+                    key={tierKey}
+                    tier={detail.name}
+                    price={tierResult.annual}
+                    features={buildTierFeatures(tierKey, rc, rating.rentalIncomeLimits)}
+                    recommended={detail.recommended}
+                    selected={formData.selectedPlan === tierKey}
+                    onSelect={() => updateField("selectedPlan", tierKey)}
+                  />
+                );
+              })}
             </div>
 
             {formData.selectedPlan && (
@@ -636,9 +636,9 @@ const Quote = () => {
                     Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
                   </p>
                   <p className="text-2xl font-extrabold text-accent">
-                    ${Math.round(premiums[formData.selectedPlan as keyof PremiumTiers] / 12).toLocaleString()}/mo
+                    ${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly.toLocaleString()}/mo
                     <span className="text-sm font-normal text-accent/60 ml-2">
-                      (${premiums[formData.selectedPlan as keyof PremiumTiers].toLocaleString()}/yr)
+                      (${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual.toLocaleString()}/yr)
                     </span>
                   </p>
                 </div>

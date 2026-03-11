@@ -6,35 +6,29 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// ═══ QUICK ESTIMATE ENGINE ═══
+import { rateLandlordQuote, LANDLORD_PROPERTY_TYPES } from "@/lib/ratingEngine";
 
 function estimatePremium(inputs: {
   propertyType: string; units: number; replacementCost: number; yearBuilt: number;
 }) {
-  const { propertyType, units, replacementCost, yearBuilt } = inputs;
-  let base = replacementCost * 0.0035;
-  const um: Record<number, number> = { 1: 1, 2: 1.35, 3: 1.6, 4: 1.85 };
-  base *= um[Math.min(units, 4)] || 2.1;
-  const age = 2026 - yearBuilt;
-  if (age > 50) base *= 1.25;
-  else if (age > 30) base *= 1.12;
-  else if (age < 5) base *= 0.92;
-  if (propertyType === "condo") base *= 0.75;
-  if (propertyType === "multi") base *= 1.1;
-  const low = Math.round(base * 0.85);
-  const high = Math.round(base * 1.2);
-  const mid = Math.round(base);
-  return { low, mid, high };
+  const r = rateLandlordQuote({
+    propertyType: inputs.propertyType,
+    yearBuilt: inputs.yearBuilt || 1990,
+    sqft: 1200,
+    units: inputs.units,
+    constructionType: "Brick Veneer",
+    heatingType: "Forced Air Gas",
+    roofType: "Asphalt Shingle",
+    replacementCost: inputs.replacementCost || 400000,
+    monthlyRentalIncome: 0,
+    isVacant: false,
+    claimsHistory: 0,
+    shortTermRental: false,
+  });
+  return { low: r.tiers.basic.annual, mid: r.tiers.standard.annual, high: r.tiers.premium.annual };
 }
 
-const PROPERTY_TYPES = [
-  { value: "detached", label: "Detached" },
-  { value: "semi", label: "Semi-Detached" },
-  { value: "townhouse", label: "Townhouse / Row" },
-  { value: "multi", label: "Multi-Unit (2-6)" },
-  { value: "condo", label: "Condo Unit" },
-  { value: "duplex", label: "Duplex" },
-];
+const PROPERTY_TYPES = LANDLORD_PROPERTY_TYPES;
 
 const COVERAGE_FEATURES = [
   {

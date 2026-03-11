@@ -2,36 +2,22 @@ import { useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// ═══ TENANT ESTIMATE ENGINE ═══
+import { rateTenantQuote, UNIT_TYPE_OPTIONS } from "@/lib/ratingEngine";
+
 function estimatePremium(inputs: {
   unitType: string; contentsValue: number; liabilityLimit: string; hasHighValue: boolean;
 }) {
-  const { unitType, contentsValue, liabilityLimit, hasHighValue } = inputs;
-  let base = contentsValue * 0.012;
-  const typeMultiplier: Record<string, number> = {
-    apartment: 1.0, condo: 0.95, basement: 1.15, house: 1.05, townhouse: 1.0, room: 0.85,
-  };
-  base *= typeMultiplier[unitType] || 1.0;
-  const liabilityAdd: Record<string, number> = {
-    "1000000": 0, "2000000": 35, "3000000": 65,
-  };
-  base += liabilityAdd[liabilityLimit] || 0;
-  if (hasHighValue) base *= 1.15;
-  base = Math.max(base, 180);
-  const annual = Math.round(base);
-  const low = Math.round(annual * 0.85);
-  const high = Math.round(annual * 1.15);
-  return { low, mid: annual, high };
+  const r = rateTenantQuote({
+    unitType: inputs.unitType,
+    contentsValue: inputs.contentsValue || 30000,
+    liabilityLimit: inputs.liabilityLimit,
+    deductible: 500,
+    hasHighValueItems: inputs.hasHighValue,
+  });
+  return { low: r.low, mid: r.annual, high: r.high };
 }
 
-const UNIT_TYPES = [
-  { value: "apartment", label: "Apartment" },
-  { value: "condo", label: "Condo" },
-  { value: "basement", label: "Basement Unit" },
-  { value: "house", label: "House Rental" },
-  { value: "townhouse", label: "Townhouse" },
-  { value: "room", label: "Room / Shared" },
-];
+const UNIT_TYPES = UNIT_TYPE_OPTIONS;
 
 const CONTENTS_PRESETS = [
   { value: 15000, label: "$15K" },

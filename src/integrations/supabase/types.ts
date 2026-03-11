@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      policies: {
+        Row: {
+          additional_insured_email: string | null
+          additional_insured_name: string | null
+          additional_insured_type: string | null
+          address: string
+          annual_premium: number
+          construction_type: string | null
+          created_at: string
+          effective_date: string
+          expiry_date: string
+          heating_type: string | null
+          id: string
+          insured_email: string
+          insured_first_name: string
+          insured_last_name: string
+          insured_phone: string | null
+          liability_limit: string | null
+          mailing_address: string | null
+          monthly_premium: number
+          payment_last_four: string | null
+          payment_method: string | null
+          policy_number: string
+          property_type: string | null
+          rental_income_limit: number | null
+          replacement_cost: number | null
+          roof_type: string | null
+          sqft: number | null
+          status: string
+          tier: string
+          units: number | null
+          updated_at: string
+          user_id: string
+          year_built: number | null
+        }
+        Insert: {
+          additional_insured_email?: string | null
+          additional_insured_name?: string | null
+          additional_insured_type?: string | null
+          address: string
+          annual_premium: number
+          construction_type?: string | null
+          created_at?: string
+          effective_date: string
+          expiry_date: string
+          heating_type?: string | null
+          id?: string
+          insured_email: string
+          insured_first_name: string
+          insured_last_name: string
+          insured_phone?: string | null
+          liability_limit?: string | null
+          mailing_address?: string | null
+          monthly_premium: number
+          payment_last_four?: string | null
+          payment_method?: string | null
+          policy_number: string
+          property_type?: string | null
+          rental_income_limit?: number | null
+          replacement_cost?: number | null
+          roof_type?: string | null
+          sqft?: number | null
+          status?: string
+          tier: string
+          units?: number | null
+          updated_at?: string
+          user_id: string
+          year_built?: number | null
+        }
+        Update: {
+          additional_insured_email?: string | null
+          additional_insured_name?: string | null
+          additional_insured_type?: string | null
+          address?: string
+          annual_premium?: number
+          construction_type?: string | null
+          created_at?: string
+          effective_date?: string
+          expiry_date?: string
+          heating_type?: string | null
+          id?: string
+          insured_email?: string
+          insured_first_name?: string
+          insured_last_name?: string
+          insured_phone?: string | null
+          liability_limit?: string | null
+          mailing_address?: string | null
+          monthly_premium?: number
+          payment_last_four?: string | null
+          payment_method?: string | null
+          policy_number?: string
+          property_type?: string | null
+          rental_income_limit?: number | null
+          replacement_cost?: number | null
+          roof_type?: string | null
+          sqft?: number | null
+          status?: string
+          tier?: string
+          units?: number | null
+          updated_at?: string
+          user_id?: string
+          year_built?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

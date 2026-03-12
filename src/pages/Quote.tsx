@@ -88,6 +88,7 @@ const TENANT_STEPS = [
 
 const LANDLORD_STEPS = [
   { id: "owner-type", label: "Type" },
+  { id: "currently-insured", label: "Insured?" },
   { id: "property-details", label: "Property" },
   { id: "rental-details", label: "Rental" },
   { id: "quote-result", label: "Quote" },

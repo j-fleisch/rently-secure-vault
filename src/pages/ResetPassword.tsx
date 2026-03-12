@@ -57,8 +57,11 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <a href="/" className="inline-block mb-5"><span className="text-2xl font-bold tracking-[0.3em] text-accent uppercase">CEDAR</span></a>
-          <h1 className="text-2xl font-extrabold text-foreground font-serif">Set new password</h1>
+          <a href="/" className="inline-block mb-6">
+            <span className="text-4xl font-bold tracking-[0.35em] text-accent uppercase">CEDAR</span>
+            <span className="block text-[10px] tracking-[0.5em] text-muted-foreground uppercase mt-1">Insurance</span>
+          </a>
+          <h1 className="text-3xl font-extrabold text-foreground font-serif mt-2">Set new password</h1>
           <p className="text-sm text-muted-foreground mt-1">Enter your new password below</p>
         </div>
 

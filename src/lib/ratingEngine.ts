@@ -292,6 +292,7 @@ export function buildTierFeatures(
   const lossOfRent = rentalIncomeLimits[tierKey];
   return [
     `Dwelling: $${rc.toLocaleString()}`,
+    `Deductible: $${tier.deductible.toLocaleString()}`,
     ...(lossOfRent > 0
       ? [`Loss of rent: $${lossOfRent.toLocaleString()} (${tier.lossOfRentMonths} mo)`]
       : [`Loss of rent: ${tier.lossOfRentMonths} months`]),

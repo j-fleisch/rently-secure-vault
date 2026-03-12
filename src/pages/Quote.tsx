@@ -381,6 +381,7 @@ const Quote = () => {
         shortTermRental: formData.shortTermRental,
       });
       setRating(r);
+      setCustomDwelling(parseInt(formData.replacementCost) || 400000);
     }
 
     // Pre-fill bind legal name from contact info when moving to bind step

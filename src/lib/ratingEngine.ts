@@ -239,6 +239,8 @@ export const TIER_DETAILS: Record<"basic" | "standard" | "premium", TierDetail> 
     key: "basic",
     recommended: false,
     liabilityLabel: "$1,000,000",
+    liabilityAmount: 1000000,
+    deductible: 2500,
     lossOfRentMonths: 12,
     features: [
       "Liability: $1,000,000|recommended",
@@ -250,6 +252,8 @@ export const TIER_DETAILS: Record<"basic" | "standard" | "premium", TierDetail> 
     key: "standard",
     recommended: true,
     liabilityLabel: "$2,000,000",
+    liabilityAmount: 2000000,
+    deductible: 1000,
     lossOfRentMonths: 18,
     features: [
       "Liability: $2,000,000|recommended",
@@ -263,6 +267,8 @@ export const TIER_DETAILS: Record<"basic" | "standard" | "premium", TierDetail> 
     key: "premium",
     recommended: false,
     liabilityLabel: "$5,000,000",
+    liabilityAmount: 5000000,
+    deductible: 500,
     lossOfRentMonths: 24,
     features: [
       "Liability: $5,000,000|recommended",

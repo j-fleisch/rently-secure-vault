@@ -996,9 +996,10 @@ const Quote = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground">Premium</span><span className="font-bold text-accent">${premiumMonthly}/mo (${premiumAnnual.toLocaleString()}/yr)</span></div>
                 {isLandlordBind && (
                   <>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(parseInt(formData.replacementCost) || 400000).toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{formData.selectedPlan === "basic" ? "$1,000,000" : formData.selectedPlan === "standard" ? "$2,000,000" : "$5,000,000"}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating!.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"].toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Dwelling</span><span className="font-medium text-foreground">${(isCustomBind ? customDwelling : (parseInt(formData.replacementCost) || 400000)).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Liability</span><span className="font-medium text-foreground">{isCustomBind ? `$${customLiability.toLocaleString()}` : formData.selectedPlan === "basic" ? "$1,000,000" : formData.selectedPlan === "standard" ? "$2,000,000" : "$5,000,000"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Deductible</span><span className="font-medium text-foreground">{isCustomBind ? `$${customDeductible.toLocaleString()}` : `$${(TIER_DETAILS[formData.selectedPlan as "basic" | "standard" | "premium"]?.deductible || 1000).toLocaleString()}`}</span></div>
+                    {!isCustomBind && <div className="flex justify-between"><span className="text-muted-foreground">Loss of Rent</span><span className="font-medium text-foreground">${rating!.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"].toLocaleString()}</span></div>}
                   </>
                 )}
                 {isTenantBind && (

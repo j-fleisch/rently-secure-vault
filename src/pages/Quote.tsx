@@ -881,7 +881,7 @@ const Quote = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {(["basic", "standard", "premium"] as const).map((tierKey) => {
                 const detail = TIER_DETAILS[tierKey];
                 const tierResult = rating.tiers[tierKey];
@@ -1340,7 +1340,7 @@ const Quote = () => {
       <Navbar />
       <main className="flex-1">
         <div className="container py-12 md:py-20">
-          <div className={cn("mx-auto", isQuoteResult ? "max-w-4xl" : "max-w-2xl")}>
+          <div className={cn("mx-auto", isQuoteResult ? "max-w-7xl" : "max-w-2xl")}>
             {!isHomeowner && !isConfirmation && <QuoteProgressBar steps={steps} currentStep={currentStep} />}
 
             {address && !isHomeowner && !isConfirmation && (

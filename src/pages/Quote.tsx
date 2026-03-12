@@ -416,6 +416,11 @@ const Quote = () => {
 
     // Pre-fill bind legal name from contact info when moving to bind step
     if (currentStepId === "quote-result" || currentStepId === "contact") {
+      // Check underwriting decision before allowing bind
+      if (currentStepId === "quote-result" && uwDecision && !uwDecision.canBind) {
+        setShowManualReview(true);
+        return;
+      }
       setFormData((prev) => ({
         ...prev,
         legalFirstName: prev.legalFirstName || prev.firstName,

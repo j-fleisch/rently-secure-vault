@@ -464,9 +464,13 @@ const Quote = () => {
 
     // Landlord
     if (flow === "landlord" && rating && formData.selectedPlan) {
-      const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-      const tierData = rating.tiers[tierKey];
-      const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+      const isCustom = formData.selectedPlan === "custom";
+      const tierKey = isCustom ? "custom" : formData.selectedPlan as "basic" | "standard" | "premium";
+      const tierData = isCustom
+        ? { annual: Math.round(rating.calculatedPremium * (customDwelling / (parseInt(formData.replacementCost) || 400000)) * (customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0) + (customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0)), monthly: 0 }
+        : rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"];
+      if (isCustom) tierData.monthly = Math.round(tierData.annual / 12);
+      const liabilityLabel = isCustom ? `$${customLiability.toLocaleString()}` : tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
       return {
         policyNumber: boundPolicy.policyNumber,
         insuredName: `${formData.legalFirstName} ${formData.legalLastName}`,
@@ -478,8 +482,8 @@ const Quote = () => {
         annualPremium: tierData.annual,
         monthlyPremium: tierData.monthly,
         liabilityLimit: liabilityLabel,
-        replacementCost: parseInt(formData.replacementCost) || 400000,
-        rentalIncomeLimit: rating.rentalIncomeLimits[tierKey],
+        replacementCost: isCustom ? customDwelling : (parseInt(formData.replacementCost) || 400000),
+        rentalIncomeLimit: isCustom ? 0 : rating.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"],
         additionalInsuredName: formData.additionalInsuredName || undefined,
         additionalInsuredType: formData.additionalInsuredType || undefined,
       };

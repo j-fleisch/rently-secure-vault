@@ -356,7 +356,8 @@ const Quote = () => {
   };
 
   const handleNext = () => {
-    if (currentStepId === "owner-type" && formData.ownerType === "landlord") {
+    // Landlord: when advancing from currently-insured to property-details, auto-fill property
+    if (currentStepId === "currently-insured" && formData.ownerType === "landlord") {
       setCurrentStep((s) => s + 1);
       setPropertyLoading(true);
       setTimeout(() => {
@@ -376,6 +377,12 @@ const Quote = () => {
         }));
         setPropertyLoading(false);
       }, 1500);
+      return;
+    }
+
+    // Landlord: simple advance from owner-type
+    if (currentStepId === "owner-type" && formData.ownerType === "landlord") {
+      setCurrentStep((s) => s + 1);
       return;
     }
 

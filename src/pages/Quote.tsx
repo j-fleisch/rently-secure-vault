@@ -593,6 +593,11 @@ const Quote = () => {
                   onClick={() => updateField("currentlyInsured", opt.value)} label={opt.label} description={opt.description} />
               ))}
             </div>
+
+            {/* Show prior insurance detail questions for landlords who select "yes" */}
+            {flow === "landlord" && formData.currentlyInsured === "yes" && (
+              <PriorInsuranceQuestions prior={priorInsurance} onChange={setPriorInsurance} />
+            )}
           </div>
         );
 

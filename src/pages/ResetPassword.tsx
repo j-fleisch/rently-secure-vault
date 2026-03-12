@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import cedarLogo from "@/assets/cedar-logo.png";
+
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");

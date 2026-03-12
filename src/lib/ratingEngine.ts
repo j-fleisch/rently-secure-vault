@@ -229,6 +229,8 @@ export interface TierDetail {
   features: string[];
   liabilityLabel: string;
   lossOfRentMonths: number;
+  deductible: number;
+  liabilityAmount: number;
 }
 
 export const TIER_DETAILS: Record<"basic" | "standard" | "premium", TierDetail> = {

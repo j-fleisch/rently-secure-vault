@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import cedarLogo from "@/assets/cedar-logo.png";
+
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -33,7 +33,7 @@ export default function ResetPassword() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
-          <img src={cedarLogo} alt="Cedar Insurance" className="h-10 mx-auto mb-6" />
+          <span className="text-2xl font-bold tracking-[0.3em] text-accent uppercase block mb-2">CEDAR</span>
           <div className="bg-card border-2 border-border rounded-2xl p-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-100 mb-4">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round">
@@ -56,7 +56,7 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <a href="/"><img src={cedarLogo} alt="Cedar Insurance" className="h-10 mx-auto mb-4" /></a>
+          <a href="/" className="inline-block mb-5"><span className="text-2xl font-bold tracking-[0.3em] text-accent uppercase">CEDAR</span></a>
           <h1 className="text-2xl font-extrabold text-foreground font-serif">Set new password</h1>
           <p className="text-sm text-muted-foreground mt-1">Enter your new password below</p>
         </div>

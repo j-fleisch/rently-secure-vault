@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
-import cedarLogo from "@/assets/cedar-logo.png";
+
 
 export default function Auth() {
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
@@ -69,8 +69,8 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/">
-            <img src={cedarLogo} alt="Cedar Insurance" className="h-10 mx-auto mb-4" />
+          <a href="/" className="inline-block mb-5">
+            <span className="text-2xl font-bold tracking-[0.3em] text-accent uppercase">CEDAR</span>
           </a>
           <h1 className="text-2xl font-extrabold text-foreground font-serif">
             {mode === "login" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset password"}

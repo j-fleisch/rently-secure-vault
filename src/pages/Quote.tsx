@@ -962,8 +962,15 @@ const Quote = () => {
         const isTenantBind = flow === "tenant" && tenantRating;
         if (!isLandlordBind && !isTenantBind) return null;
 
-        const premiumAnnual = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual : tenantRating!.annual;
-        const premiumMonthly = isLandlordBind ? rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly : tenantRating!.monthly;
+        const isCustomBind = formData.selectedPlan === "custom";
+        const premiumAnnual = isLandlordBind
+          ? (isCustomBind
+            ? Math.round(rating!.calculatedPremium * (customDwelling / (parseInt(formData.replacementCost) || 400000)) * (customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0) + (customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0))
+            : rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual)
+          : tenantRating!.annual;
+        const premiumMonthly = isLandlordBind
+          ? (isCustomBind ? Math.round(premiumAnnual / 12) : rating!.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly)
+          : tenantRating!.monthly;
         const coverageLabel = isLandlordBind
           ? (formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)) + " Plan"
           : (formData.coverage.charAt(0).toUpperCase() + formData.coverage.slice(1)) + " Tenant Coverage";

@@ -17,6 +17,8 @@ import SelectionCard from "@/components/quote/SelectionCard";
 import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
 import CustomTierCard from "@/components/quote/CustomTierCard";
+import PriorInsuranceQuestions, { evaluateUnderwriting, type PriorInsurance, type UnderwritingDecision } from "@/components/quote/PriorInsuranceQuestions";
+import ManualReviewScreen from "@/components/quote/ManualReviewScreen";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { lookupProperty, type PropertyData } from "@/lib/propertyData";
 import {
@@ -86,6 +88,7 @@ const TENANT_STEPS = [
 
 const LANDLORD_STEPS = [
   { id: "owner-type", label: "Type" },
+  { id: "currently-insured", label: "Insured?" },
   { id: "property-details", label: "Property" },
   { id: "rental-details", label: "Rental" },
   { id: "quote-result", label: "Quote" },
@@ -168,6 +171,17 @@ const Quote = () => {
   const [customDwelling, setCustomDwelling] = useState(400000);
   const [customDeductible, setCustomDeductible] = useState(1000);
   const [customLiability, setCustomLiability] = useState(2000000);
+  const [priorInsurance, setPriorInsurance] = useState<PriorInsurance>({
+    hasCurrentInsurance: "",
+    currentInsurer: "",
+    policyExpiry: "",
+    cancelledOrNonRenewed: false,
+    cancellationReason: "",
+    lapseDuration: "",
+    continuousYears: "",
+  });
+  const [uwDecision, setUwDecision] = useState<UnderwritingDecision | null>(null);
+  const [showManualReview, setShowManualReview] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     address,
@@ -342,7 +356,8 @@ const Quote = () => {
   };
 
   const handleNext = () => {
-    if (currentStepId === "owner-type" && formData.ownerType === "landlord") {
+    // Landlord: when advancing from currently-insured to property-details, auto-fill property
+    if (currentStepId === "currently-insured" && formData.ownerType === "landlord") {
       setCurrentStep((s) => s + 1);
       setPropertyLoading(true);
       setTimeout(() => {
@@ -365,8 +380,14 @@ const Quote = () => {
       return;
     }
 
+    // Landlord: simple advance from owner-type
+    if (currentStepId === "owner-type" && formData.ownerType === "landlord") {
+      setCurrentStep((s) => s + 1);
+      return;
+    }
+
     if (currentStepId === "rental-details") {
-      const r = rateLandlordQuote({
+      const quoteInput = {
         propertyType: formData.propertyType,
         yearBuilt: parseInt(formData.yearBuilt) || 1990,
         sqft: parseInt(formData.sqft) || 1200,
@@ -379,13 +400,27 @@ const Quote = () => {
         isVacant: formData.isVacant,
         claimsHistory: formData.claimsHistory,
         shortTermRental: formData.shortTermRental,
-      });
+      };
+      const r = rateLandlordQuote(quoteInput);
       setRating(r);
       setCustomDwelling(parseInt(formData.replacementCost) || 400000);
+
+      // Evaluate underwriting if user has prior insurance
+      if (formData.currentlyInsured === "yes") {
+        const decision = evaluateUnderwriting(quoteInput, priorInsurance);
+        setUwDecision(decision);
+      } else {
+        setUwDecision(null);
+      }
     }
 
     // Pre-fill bind legal name from contact info when moving to bind step
     if (currentStepId === "quote-result" || currentStepId === "contact") {
+      // Check underwriting decision before allowing bind
+      if (currentStepId === "quote-result" && uwDecision && !uwDecision.canBind) {
+        setShowManualReview(true);
+        return;
+      }
       setFormData((prev) => ({
         ...prev,
         legalFirstName: prev.legalFirstName || prev.firstName,
@@ -579,6 +614,11 @@ const Quote = () => {
                   onClick={() => updateField("currentlyInsured", opt.value)} label={opt.label} description={opt.description} />
               ))}
             </div>
+
+            {/* Show prior insurance detail questions for landlords who select "yes" */}
+            {flow === "landlord" && formData.currentlyInsured === "yes" && (
+              <PriorInsuranceQuestions prior={priorInsurance} onChange={setPriorInsurance} />
+            )}
           </div>
         );
 
@@ -1334,6 +1374,27 @@ const Quote = () => {
   const isQuoteResult = currentStepId === "quote-result";
   const isBindCheckout = currentStepId === "bind-checkout";
   const isConfirmation = currentStepId === "confirmation";
+
+  // Manual review screen
+  if (showManualReview && uwDecision) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1">
+          <div className="container py-12 md:py-20">
+            <div className="mx-auto max-w-2xl">
+              <ManualReviewScreen
+                decision={uwDecision}
+                email={formData.email}
+                onBack={() => { setShowManualReview(false); navigate("/"); }}
+              />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

@@ -1375,6 +1375,27 @@ const Quote = () => {
   const isBindCheckout = currentStepId === "bind-checkout";
   const isConfirmation = currentStepId === "confirmation";
 
+  // Manual review screen
+  if (showManualReview && uwDecision) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1">
+          <div className="container py-12 md:py-20">
+            <div className="mx-auto max-w-2xl">
+              <ManualReviewScreen
+                decision={uwDecision}
+                email={formData.email}
+                onBack={() => { setShowManualReview(false); navigate("/"); }}
+              />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />

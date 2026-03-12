@@ -1340,7 +1340,7 @@ const Quote = () => {
       <Navbar />
       <main className="flex-1">
         <div className="container py-12 md:py-20">
-          <div className={cn("mx-auto", isQuoteResult ? "max-w-4xl" : "max-w-2xl")}>
+          <div className={cn("mx-auto", isQuoteResult ? "max-w-7xl" : "max-w-2xl")}>
             {!isHomeowner && !isConfirmation && <QuoteProgressBar steps={steps} currentStep={currentStep} />}
 
             {address && !isHomeowner && !isConfirmation && (

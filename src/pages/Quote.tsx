@@ -662,66 +662,96 @@ const Quote = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Property Type ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Property Type ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">E.g. Detached, Semi-Detached, Townhouse, Condo, or Multi-Unit Residential.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.propertyType} onChange={(e) => updateField("propertyType", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {PROPERTY_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Year Built ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Year Built ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">The year the building was originally constructed. Older buildings may have different risk profiles.</TooltipContent></Tooltip>
+                </label>
                 <input type="number" value={formData.yearBuilt} onChange={(e) => updateField("yearBuilt", e.target.value)}
                   placeholder="e.g. 1987" className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Square Footage ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Square Footage ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">Total above-grade living area in square feet. Excludes unfinished basement space.</TooltipContent></Tooltip>
+                </label>
                 <input type="number" value={formData.sqft} onChange={(e) => updateField("sqft", e.target.value)}
                   placeholder="e.g. 1450" className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Units ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Units ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">Number of separate rental units in the building. A single-family home = 1 unit.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.units} onChange={(e) => updateField("units", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {["1","2","3","4","5+"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Storeys ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Storeys ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">Number of above-grade levels. A "half storey" (e.g. 1.5) means the top floor has a sloped ceiling with reduced living area, like a finished attic.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.storeys} onChange={(e) => updateField("storeys", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {["1","1.5","2","2.5","3"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Construction ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Construction ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">Primary building material. E.g. "Brick Veneer" = wood frame with brick exterior; "Frame" = wood or steel frame with siding.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.constructionType} onChange={(e) => updateField("constructionType", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {CONSTRUCTION_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Heating ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Heating ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">Main heating system. "Forced Air Gas" = furnace with ducts; "Baseboard Electric" = electric heaters along walls; "Boiler" = hot water radiators.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.heating} onChange={(e) => updateField("heating", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {HEATING_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Roof ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Roof ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">Roof covering material. "Asphalt Shingle" is most common; "Flat (Modified Bitumen)" is typical for multi-unit buildings with flat roofs.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.roof} onChange={(e) => updateField("roof", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {ROOF_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Basement ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Basement ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">"Full" = extends under entire footprint; "Partial" = under part of the house; "Finished" = livable space; "Unfinished" = bare concrete/utility only.</TooltipContent></Tooltip>
+                </label>
                 <select value={formData.basement} onChange={(e) => updateField("basement", e.target.value)} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {BASEMENT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">Replacement Cost ✦</label>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Replacement Cost ✦
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">The estimated cost to rebuild the structure from scratch at today's prices — not the market value or purchase price.</TooltipContent></Tooltip>
+                </label>
                 <input type="number" value={formData.replacementCost}
                   onChange={(e) => updateField("replacementCost", e.target.value)}
                   placeholder="e.g. 425000" className={inputClass} />

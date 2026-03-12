@@ -387,7 +387,7 @@ const Quote = () => {
     }
 
     if (currentStepId === "rental-details") {
-      const r = rateLandlordQuote({
+      const quoteInput = {
         propertyType: formData.propertyType,
         yearBuilt: parseInt(formData.yearBuilt) || 1990,
         sqft: parseInt(formData.sqft) || 1200,
@@ -400,9 +400,18 @@ const Quote = () => {
         isVacant: formData.isVacant,
         claimsHistory: formData.claimsHistory,
         shortTermRental: formData.shortTermRental,
-      });
+      };
+      const r = rateLandlordQuote(quoteInput);
       setRating(r);
       setCustomDwelling(parseInt(formData.replacementCost) || 400000);
+
+      // Evaluate underwriting if user has prior insurance
+      if (formData.currentlyInsured === "yes") {
+        const decision = evaluateUnderwriting(quoteInput, priorInsurance);
+        setUwDecision(decision);
+      } else {
+        setUwDecision(null);
+      }
     }
 
     // Pre-fill bind legal name from contact info when moving to bind step

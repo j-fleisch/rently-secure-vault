@@ -808,9 +808,16 @@ const Quote = () => {
                   Replacement Cost ✦
                   <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[240px] text-xs">The estimated cost to rebuild the structure from scratch at today's prices — not the market value or purchase price.</TooltipContent></Tooltip>
                 </label>
-                <input type="number" value={formData.replacementCost}
-                  onChange={(e) => updateField("replacementCost", e.target.value)}
-                  placeholder="e.g. 425000" className={inputClass} />
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</div>
+                  <input type="text" inputMode="numeric"
+                    value={formData.replacementCost ? parseInt(formData.replacementCost).toLocaleString() : ""}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, "");
+                      updateField("replacementCost", raw);
+                    }}
+                    placeholder="e.g. 425,000" className={cn(inputClass, "pl-8")} />
+                </div>
               </div>
             </div>
           </div>

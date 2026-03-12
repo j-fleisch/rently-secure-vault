@@ -259,9 +259,11 @@ const Quote = () => {
         let insertData: any;
 
         if (isLandlord && rating) {
-          const tierKey = formData.selectedPlan as "basic" | "standard" | "premium";
-          const tierData = rating.tiers[tierKey];
-          const liabilityLabel = tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
+          const isCustom = formData.selectedPlan === "custom";
+          const tierKey = isCustom ? "custom" : formData.selectedPlan as "basic" | "standard" | "premium";
+          const tierData = isCustom ? { annual: Math.round(rating.calculatedPremium * (customDwelling / (parseInt(formData.replacementCost) || 400000)) * (customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0) + (customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0)), monthly: 0 } : rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"];
+          if (isCustom) tierData.monthly = Math.round(tierData.annual / 12);
+          const liabilityLabel = isCustom ? `$${customLiability.toLocaleString()}` : tierKey === "basic" ? "$1,000,000" : tierKey === "standard" ? "$2,000,000" : "$5,000,000";
 
           insertData = {
             user_id: user.id,
@@ -275,12 +277,12 @@ const Quote = () => {
             construction_type: formData.constructionType,
             heating_type: formData.heating,
             roof_type: formData.roof,
-            replacement_cost: parseInt(formData.replacementCost) || 400000,
+            replacement_cost: isCustom ? customDwelling : (parseInt(formData.replacementCost) || 400000),
             tier: tierKey,
             annual_premium: tierData.annual,
             monthly_premium: tierData.monthly,
             liability_limit: liabilityLabel,
-            rental_income_limit: rating.rentalIncomeLimits[tierKey],
+            rental_income_limit: isCustom ? 0 : rating.rentalIncomeLimits[formData.selectedPlan as "basic" | "standard" | "premium"],
             effective_date: effectiveDate,
             expiry_date: expiryDate,
             insured_first_name: formData.legalFirstName,

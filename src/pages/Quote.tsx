@@ -16,6 +16,7 @@ import Footer from "@/components/Footer";
 import SelectionCard from "@/components/quote/SelectionCard";
 import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
+import CustomTierCard from "@/components/quote/CustomTierCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { lookupProperty, type PropertyData } from "@/lib/propertyData";
 import {

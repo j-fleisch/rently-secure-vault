@@ -846,6 +846,21 @@ const Quote = () => {
       case "quote-result":
         if (!rating) return null;
         const rc = parseInt(formData.replacementCost) || 400000;
+
+        // Custom tier pricing: adjust base premium by dwelling ratio and deductible/liability factors
+        const dwellingRatio = customDwelling / rc;
+        const deductibleFactor = customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0;
+        const liabilityAdder = customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0;
+        const customAnnual = Math.round(rating.calculatedPremium * dwellingRatio * deductibleFactor + liabilityAdder);
+        const customMonthly = Math.round(customAnnual / 12);
+
+        const getSelectedPrice = () => {
+          if (formData.selectedPlan === "custom") return { monthly: customMonthly, annual: customAnnual };
+          if (formData.selectedPlan) return rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"];
+          return null;
+        };
+        const selectedPrice = getSelectedPrice();
+
         return (
           <div className="space-y-8">
             <div className="text-center">
@@ -859,7 +874,7 @@ const Quote = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {(["basic", "standard", "premium"] as const).map((tierKey) => {
                 const detail = TIER_DETAILS[tierKey];
                 const tierResult = rating.tiers[tierKey];
@@ -871,13 +886,31 @@ const Quote = () => {
                     features={buildTierFeatures(tierKey, rc, rating.rentalIncomeLimits)}
                     recommended={detail.recommended}
                     selected={formData.selectedPlan === tierKey}
-                    onSelect={() => updateField("selectedPlan", tierKey)}
+                    onSelect={() => {
+                      updateField("selectedPlan", tierKey);
+                      // Reset custom values to match this tier's defaults
+                      setCustomDwelling(rc);
+                      setCustomDeductible(detail.deductible);
+                      setCustomLiability(detail.liabilityAmount);
+                    }}
                   />
                 );
               })}
+              <CustomTierCard
+                selected={formData.selectedPlan === "custom"}
+                onSelect={() => updateField("selectedPlan", "custom")}
+                dwelling={customDwelling}
+                deductible={customDeductible}
+                liability={customLiability}
+                onDwellingChange={setCustomDwelling}
+                onDeductibleChange={setCustomDeductible}
+                onLiabilityChange={setCustomLiability}
+                monthlyPrice={customMonthly}
+                annualPrice={customAnnual}
+              />
             </div>
 
-            {formData.selectedPlan && (
+            {formData.selectedPlan && selectedPrice && (
               <>
                 <div className="bg-accent/10 rounded-2xl p-5 flex items-center justify-between flex-wrap gap-3">
                   <div>
@@ -885,31 +918,33 @@ const Quote = () => {
                       Selected: {formData.selectedPlan.charAt(0).toUpperCase() + formData.selectedPlan.slice(1)} Plan
                     </p>
                     <p className="text-2xl font-extrabold text-accent">
-                      ${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].monthly.toLocaleString()}/mo
+                      ${selectedPrice.monthly.toLocaleString()}/mo
                       <span className="text-sm font-normal text-accent/60 ml-2">
-                        (${rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"].annual.toLocaleString()}/yr)
+                        (${selectedPrice.annual.toLocaleString()}/yr)
                       </span>
                     </p>
                   </div>
                 </div>
-                <LandlordPremiumBreakdown
-                  input={{
-                    propertyType: formData.propertyType,
-                    yearBuilt: parseInt(formData.yearBuilt) || 1990,
-                    sqft: parseInt(formData.sqft) || 1200,
-                    units: parseInt(formData.units) || 1,
-                    constructionType: formData.constructionType,
-                    heatingType: formData.heating,
-                    roofType: formData.roof,
-                    replacementCost: parseInt((formData.replacementCost || '0').replace(/,/g, '')) || 400000,
-                    monthlyRentalIncome: parseInt((formData.rentalIncome || '0').replace(/,/g, '')) || 0,
-                    isVacant: formData.isVacant,
-                    claimsHistory: formData.claimsHistory,
-                    shortTermRental: formData.shortTermRental,
-                  }}
-                  rating={rating}
-                  selectedTier={formData.selectedPlan as "basic" | "standard" | "premium"}
-                />
+                {formData.selectedPlan !== "custom" && (
+                  <LandlordPremiumBreakdown
+                    input={{
+                      propertyType: formData.propertyType,
+                      yearBuilt: parseInt(formData.yearBuilt) || 1990,
+                      sqft: parseInt(formData.sqft) || 1200,
+                      units: parseInt(formData.units) || 1,
+                      constructionType: formData.constructionType,
+                      heatingType: formData.heating,
+                      roofType: formData.roof,
+                      replacementCost: parseInt((formData.replacementCost || '0').replace(/,/g, '')) || 400000,
+                      monthlyRentalIncome: parseInt((formData.rentalIncome || '0').replace(/,/g, '')) || 0,
+                      isVacant: formData.isVacant,
+                      claimsHistory: formData.claimsHistory,
+                      shortTermRental: formData.shortTermRental,
+                    }}
+                    rating={rating}
+                    selectedTier={formData.selectedPlan as "basic" | "standard" | "premium"}
+                  />
+                )}
               </>
             )}
           </div>

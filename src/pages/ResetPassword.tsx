@@ -56,7 +56,7 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <a href="/"><img src={cedarLogo} alt="Cedar Insurance" className="h-10 mx-auto mb-4" /></a>
+          <a href="/" className="inline-block mb-5"><span className="text-2xl font-bold tracking-[0.3em] text-accent uppercase">CEDAR</span></a>
           <h1 className="text-2xl font-extrabold text-foreground font-serif">Set new password</h1>
           <p className="text-sm text-muted-foreground mt-1">Enter your new password below</p>
         </div>

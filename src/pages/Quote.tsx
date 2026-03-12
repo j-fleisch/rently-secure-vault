@@ -171,6 +171,17 @@ const Quote = () => {
   const [customDwelling, setCustomDwelling] = useState(400000);
   const [customDeductible, setCustomDeductible] = useState(1000);
   const [customLiability, setCustomLiability] = useState(2000000);
+  const [priorInsurance, setPriorInsurance] = useState<PriorInsurance>({
+    hasCurrentInsurance: "",
+    currentInsurer: "",
+    policyExpiry: "",
+    cancelledOrNonRenewed: false,
+    cancellationReason: "",
+    lapseDuration: "",
+    continuousYears: "",
+  });
+  const [uwDecision, setUwDecision] = useState<UnderwritingDecision | null>(null);
+  const [showManualReview, setShowManualReview] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     address,

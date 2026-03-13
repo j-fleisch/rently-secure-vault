@@ -185,7 +185,7 @@ const CoverageCustomizeDrawer = ({
             <SliderRow
               label="Deductible"
               value={overrides.deductible}
-              min={500} max={5000} step={100}
+              min={500} max={5000} step={500}
               steps={DEDUCTIBLE_STEPS}
               onChange={(v) => update("deductible", v)}
             />

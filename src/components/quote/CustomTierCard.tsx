@@ -149,7 +149,7 @@ const CustomTierCard = ({
             value={deductible}
             min={500}
             max={5000}
-            step={100}
+            step={500}
             steps={DEDUCTIBLE_STEPS}
             onChange={onDeductibleChange}
           />

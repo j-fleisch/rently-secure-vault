@@ -172,6 +172,9 @@ const Quote = () => {
   const [customDwelling, setCustomDwelling] = useState(400000);
   const [customDeductible, setCustomDeductible] = useState(1000);
   const [customLiability, setCustomLiability] = useState(2000000);
+  const [coverageOverrides, setCoverageOverrides] = useState<Record<string, CoverageOverrides>>({});
+  const [customizeDrawerOpen, setCustomizeDrawerOpen] = useState(false);
+  const [customizeDrawerTier, setCustomizeDrawerTier] = useState<string>("");
   const [priorInsurance, setPriorInsurance] = useState<PriorInsurance>({
     hasCurrentInsurance: "",
     currentInsurer: "",

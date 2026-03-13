@@ -293,8 +293,8 @@ export function LandlordPremiumBreakdown({ input, rating, selectedTier }: Landlo
               </div>
               <div className="col-span-2"></div>
               <div className="col-span-2 text-center">
-                <p className="text-lg font-extrabold text-accent">${tierData.annual.toLocaleString()}/yr</p>
-                <p className="text-xs text-accent/60">${tierData.monthly}/mo</p>
+                <p className="text-lg font-extrabold text-accent">${tierData.monthly.toLocaleString()}/mo</p>
+                <p className="text-xs text-accent/60">${tierData.annual.toLocaleString()}/yr</p>
               </div>
               <div className="col-span-3">
                 <p className="text-xs text-accent/70">

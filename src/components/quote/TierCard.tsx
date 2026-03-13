@@ -1,4 +1,4 @@
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Settings2 } from "lucide-react";
 
 interface TierCardProps {
   tier: string;
@@ -7,9 +7,10 @@ interface TierCardProps {
   recommended?: boolean;
   selected: boolean;
   onSelect: () => void;
+  onCustomize?: () => void;
 }
 
-const TierCard = ({ tier, price, features, recommended, selected, onSelect }: TierCardProps) => (
+const TierCard = ({ tier, price, features, recommended, selected, onSelect, onCustomize }: TierCardProps) => (
   <div
     onClick={onSelect}
     className={`relative rounded-2xl p-6 bg-card cursor-pointer transition-all border-2 ${
@@ -45,16 +46,27 @@ const TierCard = ({ tier, price, features, recommended, selected, onSelect }: Ti
         );
       })}
     </div>
-    <button
-      onClick={(e) => { e.stopPropagation(); onSelect(); }}
-      className={`w-full mt-4 py-3 rounded-xl font-semibold transition-all ${
-        selected
-          ? "bg-accent text-white"
-          : "bg-transparent border-2 border-border text-foreground hover:border-accent/40"
-      }`}
-    >
-      {selected ? "Selected ✓" : "Select Plan"}
-    </button>
+    <div className="flex gap-2 mt-4">
+      <button
+        onClick={(e) => { e.stopPropagation(); onSelect(); }}
+        className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+          selected
+            ? "bg-accent text-white"
+            : "bg-transparent border-2 border-border text-foreground hover:border-accent/40"
+        }`}
+      >
+        {selected ? "Selected ✓" : "Select Plan"}
+      </button>
+      {onCustomize && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onCustomize(); }}
+          className="px-3 py-3 rounded-xl border-2 border-border text-muted-foreground hover:border-accent/40 hover:text-accent transition-all"
+          title="Customize this plan"
+        >
+          <Settings2 className="w-4 h-4" />
+        </button>
+      )}
+    </div>
   </div>
 );
 

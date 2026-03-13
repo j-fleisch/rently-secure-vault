@@ -17,6 +17,7 @@ import SelectionCard from "@/components/quote/SelectionCard";
 import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
 import CustomTierCard from "@/components/quote/CustomTierCard";
+import CoverageCustomizeDrawer, { type CoverageOverrides, DEFAULT_OVERRIDES, calculateOverrideAnnual } from "@/components/quote/CoverageCustomizeDrawer";
 import PriorInsuranceQuestions, { evaluateUnderwriting, type PriorInsurance, type UnderwritingDecision } from "@/components/quote/PriorInsuranceQuestions";
 import ManualReviewScreen from "@/components/quote/ManualReviewScreen";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -171,6 +172,9 @@ const Quote = () => {
   const [customDwelling, setCustomDwelling] = useState(400000);
   const [customDeductible, setCustomDeductible] = useState(1000);
   const [customLiability, setCustomLiability] = useState(2000000);
+  const [coverageOverrides, setCoverageOverrides] = useState<Record<string, CoverageOverrides>>({});
+  const [customizeDrawerOpen, setCustomizeDrawerOpen] = useState(false);
+  const [customizeDrawerTier, setCustomizeDrawerTier] = useState<string>("");
   const [priorInsurance, setPriorInsurance] = useState<PriorInsurance>({
     hasCurrentInsurance: "",
     currentInsurer: "",
@@ -902,23 +906,88 @@ const Quote = () => {
         );
 
       // ── Landlord: Quote Result with Tier Cards ──
-      case "quote-result":
+      case "quote-result": {
         if (!rating) return null;
         const rc = parseInt(formData.replacementCost) || 400000;
+        const mri = parseInt((formData.rentalIncome || "0").replace(/,/g, "")) || 0;
 
-        // Custom tier pricing: adjust base premium by dwelling ratio and deductible/liability factors
-        const dwellingRatio = customDwelling / rc;
-        const deductibleFactor = customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0;
-        const liabilityAdder = customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0;
-        const customAnnual = Math.round(rating.calculatedPremium * dwellingRatio * deductibleFactor + liabilityAdder);
-        const customMonthly = Math.round(customAnnual / 12);
-
-        const getSelectedPrice = () => {
-          if (formData.selectedPlan === "custom") return { monthly: customMonthly, annual: customAnnual };
-          if (formData.selectedPlan) return rating.tiers[formData.selectedPlan as "basic" | "standard" | "premium"];
-          return null;
+        // Helper: get overrides for a tier (or defaults)
+        const getOverrides = (tierKey: string): CoverageOverrides => {
+          if (coverageOverrides[tierKey]) return coverageOverrides[tierKey];
+          if (tierKey === "custom") {
+            return {
+              dwelling: customDwelling, deductible: customDeductible, liability: customLiability,
+              lossOfRentMonths: 18, sewerBackup: 50000, equipmentBreakdown: true,
+              identityTheft: false, guaranteedReplacementCost: false, coverageForm: "broad",
+            };
+          }
+          return { dwelling: rc, ...DEFAULT_OVERRIDES[tierKey as "basic" | "standard" | "premium"] };
         };
-        const selectedPrice = getSelectedPrice();
+
+        // Calculate price for any tier using overrides
+        const getTierPrice = (tierKey: string) => {
+          const ov = getOverrides(tierKey);
+          if (coverageOverrides[tierKey]) {
+            const annual = calculateOverrideAnnual(rating.calculatedPremium, rc, ov);
+            return { annual, monthly: Math.round(annual / 12) };
+          }
+          if (tierKey === "custom") {
+            const dwellingRatio = customDwelling / rc;
+            const df = customDeductible >= 2500 ? 0.85 : customDeductible >= 1000 ? 0.92 : 1.0;
+            const la = customLiability >= 5000000 ? 120 : customLiability >= 3000000 ? 65 : customLiability >= 2000000 ? 35 : 0;
+            const annual = Math.round(rating.calculatedPremium * dwellingRatio * df + la);
+            return { annual, monthly: Math.round(annual / 12) };
+          }
+          return rating.tiers[tierKey as "basic" | "standard" | "premium"];
+        };
+
+        const selectedPrice = formData.selectedPlan ? getTierPrice(formData.selectedPlan) : null;
+
+        const openCustomizeDrawer = (tierKey: string) => {
+          // Initialize overrides for this tier if not set
+          if (!coverageOverrides[tierKey]) {
+            if (tierKey === "custom") {
+              setCoverageOverrides((prev) => ({
+                ...prev,
+                custom: {
+                  dwelling: customDwelling, deductible: customDeductible, liability: customLiability,
+                  lossOfRentMonths: 18, sewerBackup: 50000, equipmentBreakdown: true,
+                  identityTheft: false, guaranteedReplacementCost: false, coverageForm: "broad",
+                },
+              }));
+            } else {
+              setCoverageOverrides((prev) => ({
+                ...prev,
+                [tierKey]: { dwelling: rc, ...DEFAULT_OVERRIDES[tierKey as "basic" | "standard" | "premium"] },
+              }));
+            }
+          }
+          setCustomizeDrawerTier(tierKey);
+          setCustomizeDrawerOpen(true);
+        };
+
+        // Build features for a tier, reflecting overrides
+        const buildFeatures = (tierKey: "basic" | "standard" | "premium") => {
+          const ov = coverageOverrides[tierKey];
+          if (ov) {
+            const lossOfRent = mri > 0 ? mri * ov.lossOfRentMonths : 0;
+            const features = [
+              `Dwelling: $${ov.dwelling.toLocaleString()}`,
+              `Deductible: $${ov.deductible.toLocaleString()}`,
+              ...(lossOfRent > 0
+                ? [`Loss of rent: $${lossOfRent.toLocaleString()} (${ov.lossOfRentMonths} mo)`]
+                : [`Loss of rent: ${ov.lossOfRentMonths} months`]),
+              `Liability:\n$${ov.liability.toLocaleString()}|recommended`,
+              ...(ov.coverageForm === "named" ? ["Named perils"] : ov.coverageForm === "broad" ? ["Broad form"] : ["All-risk coverage"]),
+              ...(ov.sewerBackup > 0 ? [`Sewer backup: $${(ov.sewerBackup / 1000).toFixed(0)}K`] : []),
+              ...(ov.equipmentBreakdown ? ["Equipment breakdown"] : []),
+              ...(ov.identityTheft ? ["Identity theft"] : []),
+              ...(ov.guaranteedReplacementCost ? ["Guaranteed replacement cost"] : []),
+            ];
+            return features;
+          }
+          return buildTierFeatures(tierKey, rc, rating.rentalIncomeLimits);
+        };
 
         return (
           <div className="space-y-8">
@@ -936,36 +1005,42 @@ const Quote = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {(["basic", "standard", "premium"] as const).map((tierKey) => {
                 const detail = TIER_DETAILS[tierKey];
-                const tierResult = rating.tiers[tierKey];
+                const tierPrice = getTierPrice(tierKey);
                 return (
                   <TierCard
                     key={tierKey}
                     tier={detail.name}
-                    price={tierResult.annual}
-                    features={buildTierFeatures(tierKey, rc, rating.rentalIncomeLimits)}
+                    price={tierPrice.annual}
+                    features={buildFeatures(tierKey)}
                     recommended={detail.recommended}
                     selected={formData.selectedPlan === tierKey}
                     onSelect={() => {
                       updateField("selectedPlan", tierKey);
-                      // Reset custom values to match this tier's defaults
                       setCustomDwelling(rc);
                       setCustomDeductible(detail.deductible);
                       setCustomLiability(detail.liabilityAmount);
+                    }}
+                    onCustomize={() => {
+                      updateField("selectedPlan", tierKey);
+                      openCustomizeDrawer(tierKey);
                     }}
                   />
                 );
               })}
               <CustomTierCard
                 selected={formData.selectedPlan === "custom"}
-                onSelect={() => updateField("selectedPlan", "custom")}
+                onSelect={() => {
+                  updateField("selectedPlan", "custom");
+                  openCustomizeDrawer("custom");
+                }}
                 dwelling={customDwelling}
                 deductible={customDeductible}
                 liability={customLiability}
                 onDwellingChange={setCustomDwelling}
                 onDeductibleChange={setCustomDeductible}
                 onLiabilityChange={setCustomLiability}
-                monthlyPrice={customMonthly}
-                annualPrice={customAnnual}
+                monthlyPrice={getTierPrice("custom").monthly}
+                annualPrice={getTierPrice("custom").annual}
               />
             </div>
 
@@ -983,8 +1058,16 @@ const Quote = () => {
                       </span>
                     </p>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openCustomizeDrawer(formData.selectedPlan)}
+                    className="border-accent/30 text-accent hover:bg-accent/5"
+                  >
+                    <Wrench className="w-4 h-4 mr-1" /> Customize
+                  </Button>
                 </div>
-                {formData.selectedPlan !== "custom" && (
+                {formData.selectedPlan !== "custom" && !coverageOverrides[formData.selectedPlan] && (
                   <LandlordPremiumBreakdown
                     input={{
                       propertyType: formData.propertyType,
@@ -1006,8 +1089,29 @@ const Quote = () => {
                 )}
               </>
             )}
+
+            {/* Customization Drawer */}
+            <CoverageCustomizeDrawer
+              open={customizeDrawerOpen}
+              onOpenChange={setCustomizeDrawerOpen}
+              tierLabel={customizeDrawerTier.charAt(0).toUpperCase() + customizeDrawerTier.slice(1)}
+              isCustom={customizeDrawerTier === "custom"}
+              overrides={getOverrides(customizeDrawerTier)}
+              onChange={(ov) => {
+                setCoverageOverrides((prev) => ({ ...prev, [customizeDrawerTier]: ov }));
+                if (customizeDrawerTier === "custom") {
+                  setCustomDwelling(ov.dwelling);
+                  setCustomDeductible(ov.deductible);
+                  setCustomLiability(ov.liability);
+                }
+              }}
+              replacementCost={rc}
+              basePremium={rating.calculatedPremium}
+              monthlyRentalIncome={mri}
+            />
           </div>
         );
+      }
 
       // ── Bind / Checkout (Landlord + Tenant) ──
       case "bind-checkout": {

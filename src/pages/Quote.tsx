@@ -723,11 +723,27 @@ const Quote = () => {
                   Property Type ✦
                   <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">E.g. Detached, Semi-Detached, Townhouse, Condo, or Multi-Unit Residential.</TooltipContent></Tooltip>
                 </label>
-                <select value={formData.propertyType} onChange={(e) => updateField("propertyType", e.target.value)} className={selectClass}>
+                <select value={formData.propertyType} onChange={(e) => {
+                  updateField("propertyType", e.target.value);
+                  // Clear unit number if switching away from unit-based types
+                  if (!["Condo", "Apartment", "Multi-Unit Residential", "Duplex", "Triplex"].includes(e.target.value)) {
+                    updateField("unitNumber", "");
+                  }
+                }} className={selectClass}>
                   <option value="" disabled>Select</option>
                   {PROPERTY_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
+              {["Condo", "Apartment", "Multi-Unit Residential", "Duplex", "Triplex"].includes(formData.propertyType) && (
+              <div>
+                <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
+                  Unit Number
+                  <Tooltip><TooltipTrigger asChild><HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent className="max-w-[220px] text-xs">The specific unit, suite, or apartment number at this address.</TooltipContent></Tooltip>
+                </label>
+                <input type="text" value={formData.unitNumber} onChange={(e) => updateField("unitNumber", e.target.value)}
+                  placeholder="e.g. Unit 204, Suite 3B" className={inputClass} />
+              </div>
+              )}
               <div>
                 <label className="flex items-center gap-1.5 text-sm font-semibold text-foreground mb-1">
                   Year Built ✦

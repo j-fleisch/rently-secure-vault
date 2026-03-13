@@ -289,7 +289,7 @@ const Quote = () => {
             user_id: user.id,
             policy_number: policyNumber,
             status: "active",
-            address: formData.address,
+            address: formData.unitNumber ? `${formData.unitNumber}, ${formData.address}` : formData.address,
             property_type: formData.propertyType,
             year_built: parseInt(formData.yearBuilt) || null,
             sqft: parseInt(formData.sqft) || null,

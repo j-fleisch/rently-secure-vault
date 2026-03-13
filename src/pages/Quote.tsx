@@ -109,6 +109,7 @@ interface FormData {
   creditConsent: boolean;
   // Landlord – property (auto-populated)
   propertyType: string;
+  unitNumber: string;
   yearBuilt: string;
   sqft: string;
   constructionType: string;

@@ -56,7 +56,7 @@ export const DEFAULT_OVERRIDES: Record<"basic" | "standard" | "premium", Omit<Co
 
 const SEWER_PRICES: Record<number, number> = { 0: 0, 25000: 30, 50000: 55, 100000: 95 };
 const SEWER_STEPS = [0, 25000, 50000, 100000];
-const DEDUCTIBLE_STEPS = [500, 1000, 2500, 5000];
+const DEDUCTIBLE_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
 const LIABILITY_STEPS = [1000000, 2000000, 3000000, 5000000];
 const COVERAGE_FORM_FACTORS: Record<string, number> = { named: 1.0, broad: 1.05, "all-risk": 1.12 };
 const RENT_MONTHS_STEPS = [6, 12, 18, 24, 36, 48, 60];

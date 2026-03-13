@@ -197,6 +197,7 @@ const Quote = () => {
     coverageStartDate: null,
     creditConsent: false,
     propertyType: "",
+    unitNumber: "",
     yearBuilt: "",
     sqft: "",
     constructionType: "",

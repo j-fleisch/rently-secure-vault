@@ -17,6 +17,7 @@ import SelectionCard from "@/components/quote/SelectionCard";
 import QuoteProgressBar from "@/components/quote/QuoteProgressBar";
 import TierCard from "@/components/quote/TierCard";
 import CustomTierCard from "@/components/quote/CustomTierCard";
+import CoverageCustomizeDrawer, { type CoverageOverrides, DEFAULT_OVERRIDES, calculateOverrideAnnual } from "@/components/quote/CoverageCustomizeDrawer";
 import PriorInsuranceQuestions, { evaluateUnderwriting, type PriorInsurance, type UnderwritingDecision } from "@/components/quote/PriorInsuranceQuestions";
 import ManualReviewScreen from "@/components/quote/ManualReviewScreen";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

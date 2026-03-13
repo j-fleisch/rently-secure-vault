@@ -293,8 +293,8 @@ export function LandlordPremiumBreakdown({ input, rating, selectedTier }: Landlo
               </div>
               <div className="col-span-2"></div>
               <div className="col-span-2 text-center">
-                <p className="text-lg font-extrabold text-accent">${tierData.annual.toLocaleString()}/yr</p>
-                <p className="text-xs text-accent/60">${tierData.monthly}/mo</p>
+                <p className="text-lg font-extrabold text-accent">${tierData.monthly.toLocaleString()}/mo</p>
+                <p className="text-xs text-accent/60">${tierData.annual.toLocaleString()}/yr</p>
               </div>
               <div className="col-span-3">
                 <p className="text-xs text-accent/70">
@@ -535,7 +535,7 @@ export function TenantPremiumBreakdown({ input, rating }: TenantBreakdownProps) 
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-accent">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <p className="text-sm font-bold text-accent">Your Annual Premium</p>
+                <p className="text-sm font-bold text-accent">Your Monthly Premium</p>
               </div>
               <div className="text-right">
                 <p className="text-lg font-extrabold text-accent">${rating.monthly}/mo</p>

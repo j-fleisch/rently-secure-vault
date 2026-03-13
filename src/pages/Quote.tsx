@@ -1014,7 +1014,7 @@ const Quote = () => {
                 <Shield className="w-7 h-7 text-accent" />
               </div>
               <h2 className="text-2xl md:text-3xl mb-1">Your Coverage Options</h2>
-              <p className="text-muted-foreground">{formData.address}</p>
+              <p className="text-muted-foreground">{formData.unitNumber ? `${formData.unitNumber}, ${formData.address}` : formData.address}</p>
               <p className="text-sm text-muted-foreground/60">
                 {formData.propertyType} · {formData.units} unit{parseInt(formData.units) > 1 ? "s" : ""} · Built {formData.yearBuilt}
               </p>

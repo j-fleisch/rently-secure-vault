@@ -15,7 +15,7 @@ interface CustomTierCardProps {
 }
 
 const LIABILITY_STEPS = [1000000, 2000000, 3000000, 5000000];
-const DEDUCTIBLE_STEPS = [500, 1000, 2500, 5000];
+const DEDUCTIBLE_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
 
 function formatCurrency(n: number) {
   return `$${n.toLocaleString()}`;

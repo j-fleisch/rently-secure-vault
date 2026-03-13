@@ -5,7 +5,7 @@
 
 export const PROPERTY_TYPE_OPTIONS = [
   "Detached", "Semi-Detached", "Townhouse / Row", "Multi-Unit Residential",
-  "Condo", "Duplex", "Triplex",
+  "Condo", "Apartment", "Duplex", "Triplex",
 ] as const;
 
 export const CONSTRUCTION_OPTIONS = [

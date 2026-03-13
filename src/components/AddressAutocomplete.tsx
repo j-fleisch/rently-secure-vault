@@ -220,6 +220,7 @@ const AddressAutocomplete = ({
     <div ref={containerRef} className="relative flex-1">
       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
       <input
+        id="hero-address-input"
         type="text"
         value={query}
         onChange={handleInputChange}

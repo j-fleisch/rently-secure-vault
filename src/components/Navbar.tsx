@@ -45,7 +45,15 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <Link to="/auth"><Button variant="ghost" size="sm">Login</Button></Link>
-          <Link to="/quote"><Button variant="hero" size="sm">Get a Quote</Button></Link>
+          <Button variant="hero" size="sm" onClick={() => {
+            const heroInput = document.getElementById('hero-address-input');
+            if (heroInput && window.location.pathname === '/') {
+              heroInput.focus();
+              heroInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+              window.location.href = '/';
+            }
+          }}>Get a Quote</Button>
         </div>
 
         <button
@@ -82,7 +90,16 @@ const Navbar = () => {
           )}
           <div className="flex flex-col gap-2 pt-3">
             <Link to="/auth" onClick={() => setMobileOpen(false)}><Button variant="ghost" size="sm" className="w-full">Login</Button></Link>
-            <Link to="/quote" onClick={() => setMobileOpen(false)}><Button variant="hero" size="sm" className="w-full">Get a Quote</Button></Link>
+            <Button variant="hero" size="sm" className="w-full" onClick={() => {
+              setMobileOpen(false);
+              const heroInput = document.getElementById('hero-address-input');
+              if (heroInput && window.location.pathname === '/') {
+                heroInput.focus();
+                heroInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              } else {
+                window.location.href = '/';
+              }
+            }}>Get a Quote</Button>
           </div>
         </div>
       )}

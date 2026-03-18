@@ -1,1 +1,4 @@
 project_id = "vvmhjdnxjurnsmimagek"
+
+[functions.extract-mls]
+verify_jwt = false

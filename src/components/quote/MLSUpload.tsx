@@ -173,6 +173,13 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
     }
   }, [onExtracted, toast]);
 
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) handleFile(dropped);
+  }, [handleFile]);
+
   if (done) {
     return (
       <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-4 py-3 mb-4">
@@ -183,13 +190,6 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
       </div>
     );
   }
-
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) handleFile(dropped);
   }, [handleFile]);
 
   return (

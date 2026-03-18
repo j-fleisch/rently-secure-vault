@@ -37,6 +37,7 @@ import {
   type TenantRatingBreakdown,
 } from "@/lib/ratingEngine";
 import { LandlordPremiumBreakdown, TenantPremiumBreakdown } from "@/components/PremiumBreakdown";
+import { MLSUploadInline, type MLSExtractionResult } from "@/components/quote/MLSUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { downloadCertificate, type CertificateData } from "@/lib/generateCertificate";

@@ -174,9 +174,9 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
 
   if (done) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/20 px-4 py-3 mb-4">
-        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-        <span className="text-xs text-green-700 dark:text-green-400 font-medium">
+      <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-4 py-3 mb-4">
+        <CheckCircle className="w-4 h-4 text-accent flex-shrink-0" />
+        <span className="text-xs text-accent font-medium">
           MLS listing data applied — review fields below.
         </span>
       </div>

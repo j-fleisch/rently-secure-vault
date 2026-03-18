@@ -153,6 +153,7 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const { toast } = useToast();
 
   const handleFile = useCallback(async (f: File) => {

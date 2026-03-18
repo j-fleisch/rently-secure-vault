@@ -17,10 +17,12 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleGetQuote = () => {
-    const params = selectedAddress
-      ? `?address=${encodeURIComponent(selectedAddress)}`
-      : "";
-    navigate(`/quote${params}`);
+    if (!selectedAddress.trim()) {
+      const input = document.getElementById("address-autocomplete");
+      input?.focus();
+      return;
+    }
+    navigate(`/quote?address=${encodeURIComponent(selectedAddress)}`);
   };
 
   return (

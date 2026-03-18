@@ -715,9 +715,38 @@ const Quote = () => {
               <h2 className="text-2xl md:text-3xl mb-2">Confirm your property details</h2>
               <p className="text-muted-foreground">We auto-populated what we could. Please verify and correct.</p>
             </div>
+
+            {/* MLS Upload Inline */}
+            {!mlsUploaded && (
+              <MLSUploadInline
+                onExtracted={(result: MLSExtractionResult) => {
+                  const m = result.mapped;
+                  setFormData((prev) => ({
+                    ...prev,
+                    propertyType: m.propertyType || prev.propertyType,
+                    yearBuilt: m.yearBuilt || prev.yearBuilt,
+                    sqft: m.sqft || prev.sqft,
+                    units: m.units || prev.units,
+                    storeys: m.storeys || prev.storeys,
+                    constructionType: m.constructionType || prev.constructionType,
+                    heating: m.heatingType || prev.heating,
+                    roof: m.roofType || prev.roof,
+                    basement: m.basement || prev.basement,
+                    replacementCost: m.replacementCost || prev.replacementCost,
+                  }));
+                  if (m.address && !formData.address) {
+                    setFormData((prev) => ({ ...prev, address: m.address! }));
+                  }
+                  setMlsUploaded(true);
+                }}
+              />
+            )}
+
             <div className="flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-3">
               <Info className="w-4 h-4 text-accent flex-shrink-0" />
-              <span className="text-xs text-accent">Data sourced from MPAC & municipal records. ✦ = auto-filled.</span>
+              <span className="text-xs text-accent">
+                Data sourced from {mlsUploaded ? "MLS listing" : "MPAC & municipal records"}. ✦ = auto-filled.
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>

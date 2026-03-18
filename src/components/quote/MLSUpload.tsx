@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export interface MLSMappedData {
   propertyType?: string;
+  unitNumber?: string;
   yearBuilt?: string;
   sqft?: string;
   units?: string;

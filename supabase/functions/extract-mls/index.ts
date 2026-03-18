@@ -26,6 +26,7 @@ MLS sheets have a structured layout. Here is exactly where to find each field:
   - "Multiplex" → Multi-Unit Residential
   - "Duplex" → Duplex
   - "Triplex" → Triplex
+- **Unit Number**: Labeled "Unit#", "Unit", "Suite", or "Apt". For condos, this is the specific unit/suite number (e.g. "1122", "204", "PH01"). Extract JUST the number/code, not "Unit" prefix. Also check the address line — unit numbers often appear after the street (e.g. "230 King St E 1122" → unitNumber is "1122"). Separate it from the address field.
 - **Bedrooms**: Labeled "Br" or "Bedrooms". Format "3+1" means 3 full bedrooms + 1 den. Use the TOTAL (e.g. "4" for 3+1).
 - **Bathrooms**: Labeled "Bath" or "Washrooms". Format "1x4, 1x3" means one 4-piece bath + one 3-piece bath. Count TOTAL number of bathrooms (e.g. "2").
 - **Lot Size**: Labeled "Lot" or "Lot Size" or "Lot Sz". Shows dimensions like "25 x 120 Feet" or area.
@@ -93,6 +94,7 @@ MLS sheets have a structured layout. Here is exactly where to find each field:
 Return ONLY a JSON object with these fields (use null for any you cannot find):
 {
   "propertyType": "one of: Detached, Semi-Detached, Townhouse / Row, Multi-Unit Residential, Condo, Apartment, Duplex, Triplex",
+  "unitNumber": "unit/suite number as string (e.g. '1122', '204', 'Suite 3B'), or null for houses",
   "yearBuilt": "4-digit year as string",
   "sqft": "number as string, no commas",
   "units": "number as string",
@@ -104,7 +106,7 @@ Return ONLY a JSON object with these fields (use null for any you cannot find):
   "replacementCost": "estimated replacement cost as string, no commas",
   "listPrice": "listing price as string, no commas",
   "salePrice": "sale price as string, no commas, or null",
-  "address": "full property address",
+  "address": "street address WITHOUT unit number (e.g. '230 King St E, Toronto, ON M5A1K5')",
   "bedrooms": "number as string (total including dens, e.g. 3+1 = 4)",
   "bathrooms": "total count as string",
   "lotSize": "lot dimensions or area as string",

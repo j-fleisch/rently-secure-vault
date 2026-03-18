@@ -18,7 +18,7 @@ const HeroSection = () => {
 
   const handleGetQuote = () => {
     if (!selectedAddress.trim()) {
-      const input = document.getElementById("address-autocomplete");
+      document.getElementById("hero-address-input")?.focus();
       input?.focus();
       return;
     }

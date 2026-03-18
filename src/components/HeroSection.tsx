@@ -17,10 +17,11 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleGetQuote = () => {
-    const params = selectedAddress
-      ? `?address=${encodeURIComponent(selectedAddress)}`
-      : "";
-    navigate(`/quote${params}`);
+    if (!selectedAddress.trim()) {
+      document.getElementById("hero-address-input")?.focus();
+      return;
+    }
+    navigate(`/quote?address=${encodeURIComponent(selectedAddress)}`);
   };
 
   return (

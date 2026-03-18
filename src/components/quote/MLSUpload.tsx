@@ -190,7 +190,6 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
       </div>
     );
   }
-  }, [handleFile]);
 
   return (
     <div

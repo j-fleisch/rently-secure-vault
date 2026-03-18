@@ -188,6 +188,7 @@ const Quote = () => {
   });
   const [uwDecision, setUwDecision] = useState<UnderwritingDecision | null>(null);
   const [showManualReview, setShowManualReview] = useState(false);
+  const [mlsUploaded, setMlsUploaded] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     address,

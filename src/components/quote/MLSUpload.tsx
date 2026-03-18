@@ -183,8 +183,22 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
     );
   }
 
+  const [dragging, setDragging] = useState(false);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) handleFile(dropped);
+  }, [handleFile]);
+
   return (
-    <div className="rounded-xl border border-dashed border-border bg-card/50 p-4 mb-4">
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      className={`rounded-xl border border-dashed bg-card/50 p-4 mb-4 transition-colors ${dragging ? "border-accent bg-accent/5" : "border-border"}`}
+    >
       <div className="flex items-start gap-3">
         <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
           <FileText className="w-4 h-4 text-accent" />
@@ -192,7 +206,7 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">Have an MLS listing sheet?</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Upload the PDF or image and we'll auto-fill fields using AI extraction.
+            Drag & drop your PDF or image here, or click to browse. We'll auto-fill fields using AI extraction.
           </p>
 
           {loading && (

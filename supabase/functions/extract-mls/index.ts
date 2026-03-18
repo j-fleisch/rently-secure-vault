@@ -93,6 +93,7 @@ MLS sheets have a structured layout. Here is exactly where to find each field:
 Return ONLY a JSON object with these fields (use null for any you cannot find):
 {
   "propertyType": "one of: Detached, Semi-Detached, Townhouse / Row, Multi-Unit Residential, Condo, Apartment, Duplex, Triplex",
+  "unitNumber": "unit/suite number as string (e.g. '1122', '204', 'Suite 3B'), or null for houses",
   "yearBuilt": "4-digit year as string",
   "sqft": "number as string, no commas",
   "units": "number as string",
@@ -104,7 +105,7 @@ Return ONLY a JSON object with these fields (use null for any you cannot find):
   "replacementCost": "estimated replacement cost as string, no commas",
   "listPrice": "listing price as string, no commas",
   "salePrice": "sale price as string, no commas, or null",
-  "address": "full property address",
+  "address": "street address WITHOUT unit number (e.g. '230 King St E, Toronto, ON M5A1K5')",
   "bedrooms": "number as string (total including dens, e.g. 3+1 = 4)",
   "bathrooms": "total count as string",
   "lotSize": "lot dimensions or area as string",

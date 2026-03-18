@@ -724,6 +724,7 @@ const Quote = () => {
                   setFormData((prev) => ({
                     ...prev,
                     propertyType: m.propertyType || prev.propertyType,
+                    unitNumber: m.unitNumber || prev.unitNumber,
                     yearBuilt: m.yearBuilt || prev.yearBuilt,
                     sqft: m.sqft || prev.sqft,
                     units: m.units || prev.units,

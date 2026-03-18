@@ -19,7 +19,6 @@ const HeroSection = () => {
   const handleGetQuote = () => {
     if (!selectedAddress.trim()) {
       document.getElementById("hero-address-input")?.focus();
-      input?.focus();
       return;
     }
     navigate(`/quote?address=${encodeURIComponent(selectedAddress)}`);

@@ -184,7 +184,6 @@ export function MLSUploadInline({ onExtracted }: MLSUploadInlineProps) {
     );
   }
 
-  const [dragging, setDragging] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

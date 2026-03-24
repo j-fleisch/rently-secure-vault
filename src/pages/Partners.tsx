@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { CheckCircle, ArrowRight, ArrowLeft, FileText, Search, Phone, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { CheckCircle, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Check, Zap, Clock, Link2, Calculator, Shield, Users, Building2, Key, FileText } from "lucide-react";
 
 // ═══ TYPES ═══
 type PortalView = "landing" | "apply" | "dashboard";
@@ -9,117 +9,143 @@ type PortalView = "landing" | "apply" | "dashboard";
 // ═══ MOCK DATA ═══
 const PARTNER_TYPES = [
   {
+    id: "mortgage-brokerage",
+    label: "Mortgage Brokerage",
+    desc: "Brokerages and independent mortgage agents",
+    icon: "📋",
+    detail: "Your agents already handle insurance conditions at closing. Cedar eliminates the back-and-forth by giving them instant quoting tools that work inside their existing workflow — no more chasing clients for proof of insurance.",
+    benefits: [
+      "Instant insurance quotes embedded in your closing workflow — no broker tag required",
+      "Smart links let agents send clients a pre-filled quote in one click",
+      "Reduce days-to-close by removing the insurance condition bottleneck",
+      "White-label experience — your brand, your client relationship",
+      "Built-in cost estimator agents can share at pre-approval stage",
+    ],
+    integration: "Smart link or widget",
+  },
+  {
+    id: "real-estate-brokerage",
+    label: "Real Estate Brokerage",
+    desc: "Brokerages and investor-focused agents",
+    icon: "🏠",
+    detail: "Insurance is the last loose end in every investment property transaction. Cedar gives your agents a tool to resolve it instantly — right from the offer stage — so deals close faster and clients stay happy.",
+    benefits: [
+      "Agents share a smart link at offer stage — client gets a quote in minutes",
+      "Instant cost estimator helps investors budget before they even make an offer",
+      "No more back-and-forth with insurance brokers delaying closing",
+      "Branded experience — your agents look like they have it all figured out",
+      "Works for purchases, portfolio reviews, and renewals",
+    ],
+    integration: "Smart link or branded page",
+  },
+  {
     id: "lender",
     label: "Lender",
     desc: "Banks, credit unions, and alternative lenders",
     icon: "🏦",
-    detail: "Embed insurance directly into your mortgage origination flow. Protect your collateral and offer borrowers a seamless closing experience.",
+    detail: "Embed insurance directly into your mortgage origination flow. Protect your collateral and offer borrowers a seamless closing experience with zero friction.",
     benefits: [
       "Auto-trigger quotes at mortgage approval — zero friction for borrowers",
       "Proof of insurance delivered instantly to satisfy closing conditions",
-      "Revenue share on every policy originated through your channel",
       "Dedicated API for deep integration into your LOS",
+      "Reduce time-to-close on investment property mortgages",
     ],
-    volume: "",
-    commission: "",
     integration: "API or widget embed",
-  },
-  {
-    id: "mortgage-broker",
-    label: "Mortgage Agent / Broker",
-    desc: "Independent agents, brokerages, and networks",
-    icon: "📋",
-    detail: "Add landlord insurance to your service offering. Your clients already need it at closing — be the one who provides it.",
-    benefits: [
-      "Co-branded quoting page ready in minutes — no tech required",
-      "Earn referral fees on every policy, including renewals",
-      "Pre-fill quotes using mortgage application data your client already provided",
-      "White-glove support for your high-value clients",
-    ],
-    volume: "",
-    commission: "",
-    integration: "Referral link or widget",
-  },
-  {
-    id: "real-estate",
-    label: "Real Estate Agent / Broker",
-    desc: "Investor-focused agents and brokerages",
-    icon: "🏠",
-    detail: "Differentiate your service for investor clients. Offer instant insurance quotes as part of your closing package.",
-    benefits: [
-      "Stand out with investor clients — insurance quote at offer stage",
-      "Referral commission on every policy your clients purchase",
-      "Personalized landing page with your branding",
-      "Works for both purchase and portfolio insurance reviews",
-    ],
-    volume: "",
-    commission: "",
-    integration: "Referral link",
   },
   {
     id: "property-manager",
     label: "Property Manager",
     desc: "Property management companies and platforms",
     icon: "🔑",
-    detail: "Ensure every property in your portfolio has proper coverage. Embed insurance into your onboarding and compliance workflows.",
+    detail: "Ensure every property in your portfolio has proper coverage. Embed insurance into your onboarding and compliance workflows — no manual follow-ups.",
     benefits: [
       "Bulk-quote entire portfolios with a single upload",
       "Automated renewal tracking — never let a policy lapse",
       "Instant certificates of insurance for tenant and owner requests",
-      "Revenue share plus reduced E&O exposure for your firm",
+      "Reduced E&O exposure for your firm",
     ],
-    volume: "",
-    commission: "",
     integration: "API, widget, or bulk upload",
+  },
+];
+
+// ═══ VALUE PROPS — focus on transaction simplification ═══
+const VALUE_PROPS = [
+  {
+    icon: Zap,
+    title: "Smart Links",
+    description: "Generate a pre-filled quote link for any client. They click, confirm a few details, and they're covered — no phone calls, no forms, no delays.",
+  },
+  {
+    icon: Calculator,
+    title: "Instant Cost Estimator",
+    description: "Give clients a ballpark insurance cost before they even make an offer. Helps investors budget accurately and removes surprises at closing.",
+  },
+  {
+    icon: Clock,
+    title: "Faster Closings",
+    description: "Insurance conditions are the #1 cause of closing delays on investment properties. Cedar resolves them in minutes, not days.",
+  },
+  {
+    icon: Users,
+    title: "Zero Friction for Clients",
+    description: "Your clients get a seamless digital experience — no calling around, no faxing declarations pages, no waiting for callbacks from brokers.",
+  },
+  {
+    icon: Shield,
+    title: "Proper Coverage, Every Time",
+    description: "Purpose-built for rental properties. No generic homeowner policies that leave gaps — every policy is tailored for landlords.",
+  },
+  {
+    icon: Link2,
+    title: "Brokerage-Level Tools",
+    description: "Dashboard for your team to track quotes, monitor closings, and see which agents are driving the most value for clients.",
   },
 ];
 
 const INTEGRATION_TIERS = [
   {
-    tier: "Referral Link",
+    tier: "Smart Link",
     effort: "Zero tech",
     time: "Live in 24 hours",
-    desc: "We create a co-branded landing page at yourname.cedar.ca. Share the link with clients via email, text, or embed on your website.",
-    features: ["Custom URL with your branding", "Track referrals in real-time", "Automated commission reporting", "No development needed"],
+    desc: "We generate a branded link for each agent. They share it with clients via email or text — the client gets a pre-filled quote instantly.",
+    features: ["Per-agent tracking links", "Pre-fill from property address", "Client completes quote in < 5 minutes", "No development needed"],
   },
   {
     tier: "Embeddable Widget",
     effort: "One line of code",
     time: "Live in 1 week",
-    desc: "Drop a quote widget directly into your website or client portal. Clients get instant quotes without leaving your platform.",
+    desc: "Drop a quote widget into your brokerage portal or website. Clients get instant quotes without leaving your platform.",
     features: ["Branded to match your site", "Pre-fill from URL parameters", "Real-time quote results", "Conversion tracking & analytics"],
   },
   {
     tier: "Full API",
     effort: "Developer integration",
     time: "2-4 weeks",
-    desc: "Deep integration into your existing systems. Quote, bind, service, and track policies entirely within your platform.",
+    desc: "Deep integration into your existing systems. Quote, bind, and track policies entirely within your platform.",
     features: ["RESTful API with full documentation", "Quote, bind, endorse, renew, cancel", "Webhook notifications for status changes", "Sandbox environment for testing"],
   },
 ];
 
 const MOCK_DASHBOARD = {
-  partner: { name: "Apex Property Management", type: "Property Manager", since: "2025-06", tier: "Widget" },
+  partner: { name: "Apex Mortgage Group", type: "Mortgage Brokerage", since: "2025-06", tier: "Smart Link" },
   stats: {
     totalReferrals: 147, activePolicies: 118, conversionRate: 80.3,
-    totalGWP: 167400, totalCommission: 28458, pendingCommission: 3240,
-    mtdReferrals: 14, mtdPolicies: 11, mtdCommission: 2860,
+    totalGWP: 167400, avgDaysToClose: 2.1,
+    mtdReferrals: 14, mtdPolicies: 11, agentsActive: 12,
   },
   recentActivity: [
-    { date: "2026-03-02", event: "Policy bound", detail: "456 Dundas St E — Standard Plan — $1,890/yr", amount: 340 },
-    { date: "2026-03-01", event: "Quote generated", detail: "22 Elm St, Toronto — Awaiting client decision", amount: null },
-    { date: "2026-02-28", event: "Renewal processed", detail: "789 King St — Auto-renewed — $1,155/yr", amount: 208 },
-    { date: "2026-02-27", event: "Policy bound", detail: "15 Maple Ave, Mississauga — Premium Plan — $3,210/yr", amount: 578 },
-    { date: "2026-02-25", event: "Commission paid", detail: "February payout deposited", amount: 4120 },
-    { date: "2026-02-24", event: "Quote generated", detail: "88 Front St W — Client reviewing options", amount: null },
-    { date: "2026-02-22", event: "Policy bound", detail: "330 Bay St, Unit 2201 — Basic Plan — $980/yr", amount: 176 },
+    { date: "2026-03-02", event: "Policy bound", detail: "456 Dundas St E — Standard Plan — $1,890/yr", agent: "Sarah M." },
+    { date: "2026-03-01", event: "Quote generated", detail: "22 Elm St, Toronto — Awaiting client decision", agent: "James K." },
+    { date: "2026-02-28", event: "Renewal processed", detail: "789 King St — Auto-renewed — $1,155/yr", agent: "Sarah M." },
+    { date: "2026-02-27", event: "Policy bound", detail: "15 Maple Ave, Mississauga — Premium Plan — $3,210/yr", agent: "David R." },
+    { date: "2026-02-25", event: "Quote generated", detail: "88 Front St W — Client reviewing options", agent: "James K." },
   ],
   topProperties: [
-    { address: "456 Dundas St E, Toronto", premium: 1890, status: "Active" },
-    { address: "123 Queen St W, Toronto", premium: 2340, status: "Active" },
-    { address: "15 Maple Ave, Mississauga", premium: 3210, status: "Active" },
-    { address: "789 King St, Hamilton", premium: 1155, status: "Renewal Due" },
-    { address: "330 Bay St, Unit 2201", premium: 980, status: "Active" },
+    { address: "456 Dundas St E, Toronto", premium: 1890, status: "Active", agent: "Sarah M." },
+    { address: "123 Queen St W, Toronto", premium: 2340, status: "Active", agent: "James K." },
+    { address: "15 Maple Ave, Mississauga", premium: 3210, status: "Active", agent: "David R." },
+    { address: "789 King St, Hamilton", premium: 1155, status: "Renewal Due", agent: "Sarah M." },
+    { address: "330 Bay St, Unit 2201", premium: 980, status: "Active", agent: "Priya T." },
   ],
 };
 
@@ -179,31 +205,26 @@ function StepProgress({ steps, current }: { steps: string[]; current: number }) 
   );
 }
 
-// ═══ PARTNER LANDING ═══
+// ═══ PARTNER LANDING — value-add focused ═══
 function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: () => void }) {
   const [expandedType, setExpandedType] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
+      {/* Hero — transaction simplification theme */}
       <section className="py-20 md:py-28 bg-card text-center">
         <div className="container max-w-3xl space-y-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--accent))" strokeWidth="2" strokeLinecap="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
+            <Zap className="w-7 h-7 text-accent" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Partner with Cedar</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Simplify every transaction</h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Earn additional revenue by embedding landlord insurance into your existing client relationships. Your clients already need it — be the one who delivers it.
+            Insurance conditions slow down closings and frustrate clients. Cedar gives your team instant quoting tools that eliminate the bottleneck — so deals close faster and clients stay happy.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <button onClick={onApply}
               className="inline-flex items-center justify-center gap-2 bg-accent text-white px-8 py-3 rounded-xl font-semibold hover:bg-accent/90 transition-colors shadow-lg">
-              Apply to Partner
+              Get Started
               <ArrowRight className="w-4 h-4" />
             </button>
             <button onClick={onLogin}
@@ -212,17 +233,64 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
             </button>
           </div>
 
-          {/* Stats bar */}
+          {/* Stats bar — value-focused, not commission-focused */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 max-w-2xl mx-auto">
             {[
-              { num: "$2.4M+", label: "Partner-originated GWP" },
-              { num: "85%+", label: "Client retention rate" },
-              { num: "180+", label: "Active partners" },
-              { num: "2%-5%", label: "Referral commission" },
+              { num: "< 5 min", label: "Average quote time" },
+              { num: "2 days", label: "Avg insurance condition cleared" },
+              { num: "85%+", label: "Client completion rate" },
+              { num: "180+", label: "Partner firms" },
             ].map((s, i) => (
               <div key={i} className="text-center">
                 <p className="text-2xl font-extrabold text-accent">{s.num}</p>
                 <p className="text-xs text-muted-foreground">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Value Props — the core of the page */}
+      <section className="py-20">
+        <div className="container max-w-5xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-2">Tools that make your team look great</h2>
+          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+            Cedar isn't just insurance — it's a closing acceleration tool for every agent in your firm.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {VALUE_PROPS.map((vp, i) => (
+              <div key={i} className="rounded-2xl border-2 border-border bg-card p-7">
+                <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+                  <vp.icon className="w-5 h-5 text-accent" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">{vp.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{vp.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it works — simple flow */}
+      <section className="py-20 bg-card">
+        <div className="container max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-2">How it works</h2>
+          <p className="text-muted-foreground text-center mb-12">From sign-up to first client quote in under 24 hours.</p>
+          <div className="space-y-0">
+            {[
+              { step: "1", title: "Sign up your brokerage", desc: "Quick application — most firms are approved within one business day." },
+              { step: "2", title: "We set up your agents", desc: "Each agent gets a personalized smart link and access to the partner dashboard." },
+              { step: "3", title: "Agents share links with clients", desc: "When a client needs landlord insurance, agents send their smart link — client gets a pre-filled quote in minutes." },
+              { step: "4", title: "Client binds coverage instantly", desc: "Client reviews, customizes, and binds online. Proof of insurance is generated immediately for closing." },
+            ].map((s, i) => (
+              <div key={i} className="flex gap-5 py-6 border-b border-border last:border-0">
+                <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {s.step}
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground mb-1">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -251,9 +319,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                   {expandedType === pt.id ? (
                     <ChevronUp className="w-5 h-5 text-muted-foreground" />
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    </div>
+                    <ChevronDown className="w-5 h-5 text-muted-foreground" />
                   )}
                 </div>
 
@@ -269,14 +335,12 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
                       ))}
                     </div>
                     <div className="bg-muted/30 rounded-xl p-4 mb-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Integration</p>
-                        <p className="text-sm font-semibold text-foreground">{pt.integration}</p>
-                      </div>
+                      <p className="text-xs text-muted-foreground">Integration</p>
+                      <p className="text-sm font-semibold text-foreground">{pt.integration}</p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); onApply(); }}
                       className="w-full bg-accent text-white py-3 rounded-xl font-semibold hover:bg-accent/90 transition-colors">
-                      Apply as {pt.label}
+                      Get Started as {pt.label}
                     </button>
                   </div>
                 )}
@@ -290,7 +354,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
       <section className="py-20 bg-card">
         <div className="container max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-2">Integration options</h2>
-          <p className="text-muted-foreground text-center mb-10">Start simple and scale up as your volume grows.</p>
+          <p className="text-muted-foreground text-center mb-10">Start simple and scale up as your team grows.</p>
           <div className="grid md:grid-cols-3 gap-8">
             {INTEGRATION_TIERS.map((t, i) => (
               <div key={i} className="rounded-2xl border-2 border-border bg-background p-7 flex flex-col">
@@ -322,11 +386,11 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
       {/* CTA */}
       <section className="py-20">
         <div className="container max-w-2xl text-center space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Ready to get started?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Ready to simplify closings?</h2>
           <p className="text-muted-foreground leading-relaxed">Apply in 5 minutes. Most partners are live within 48 hours.</p>
           <button onClick={onApply}
             className="bg-accent text-white px-10 py-3 rounded-xl font-semibold hover:bg-accent/90 transition-colors shadow-lg">
-            Apply Now
+            Get Started
           </button>
         </div>
       </section>
@@ -345,7 +409,7 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
     firstName: "", lastName: "", email: "", phone: "", title: "",
   });
   const [business, setBusiness] = useState<any>({
-    annualVolume: "", clientTypes: [] as string[], currentInsurance: "",
+    annualVolume: "", agentCount: "", currentInsurance: "",
     integrationPreference: "", additionalNotes: "",
   });
   const [agreed, setAgreed] = useState(false);
@@ -370,6 +434,7 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
     agreed;
 
   const ptInfo = PARTNER_TYPES.find((p) => p.id === partnerType);
+  const isBrokerage = partnerType === "mortgage-brokerage" || partnerType === "real-estate-brokerage";
 
   if (submitted) {
     return (
@@ -393,8 +458,8 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
             {[
               "Our partnerships team will review your application (1-2 business days)",
               "You'll receive an email to schedule a quick intro call",
-              "We'll get you set up with your preferred integration tier",
-              "Start referring clients and earning commissions",
+              "We'll set up smart links for your agents and configure your dashboard",
+              "Your team starts sharing links with clients immediately",
             ].map((s, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-accent font-bold text-sm mt-0.5">{i + 1}.</span>
@@ -419,31 +484,20 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
       {step === 0 && (
         <div>
           <h2 className="text-2xl font-extrabold text-foreground mb-1">What type of partner are you?</h2>
-          <p className="text-muted-foreground mb-6">This helps us tailor the program to your business.</p>
+          <p className="text-muted-foreground mb-6">This helps us tailor the tools and integration for your team.</p>
           <div className="flex flex-col gap-3">
             {PARTNER_TYPES.map((pt) => (
               <SelectionCard key={pt.id} selected={partnerType === pt.id}
                 onClick={() => setPartnerType(pt.id)}
-                label={pt.label} description={pt.desc} icon={pt.icon}
-                extra={pt.commission} />
+                label={pt.label} description={pt.desc} icon={pt.icon} />
             ))}
           </div>
           {partnerType && ptInfo && (
             <div className="mt-6 bg-accent/10 rounded-xl p-5">
               <p className="text-sm text-foreground mb-3">{ptInfo.detail}</p>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-xs text-muted-foreground">Commission</p>
-                  <p className="text-sm font-bold text-accent">{ptInfo.commission}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Min Volume</p>
-                  <p className="text-sm font-bold text-foreground">{ptInfo.volume}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Integration</p>
-                  <p className="text-sm font-bold text-foreground">{ptInfo.integration}</p>
-                </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Integration</p>
+                <p className="text-sm font-bold text-foreground">{ptInfo.integration}</p>
               </div>
             </div>
           )}
@@ -453,14 +507,14 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
       {/* STEP 2: COMPANY */}
       {step === 1 && (
         <div>
-          <h2 className="text-2xl font-extrabold text-foreground mb-1">Company details</h2>
+          <h2 className="text-2xl font-extrabold text-foreground mb-1">{isBrokerage ? "Brokerage details" : "Company details"}</h2>
           <p className="text-muted-foreground mb-6">Tell us about your organization.</p>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-1">Company Name *</label>
+              <label className="block text-sm font-semibold text-foreground mb-1">{isBrokerage ? "Brokerage Name" : "Company Name"} *</label>
               <input type="text" value={company.name}
                 onChange={(e) => setCompany((c: any) => ({ ...c, name: e.target.value }))}
-                placeholder="e.g. Apex Property Management"
+                placeholder={isBrokerage ? "e.g. Apex Mortgage Group" : "e.g. Apex Property Management"}
                 className="w-full p-3 rounded-lg border-2 border-border bg-card text-foreground outline-none focus:border-accent transition-colors" />
             </div>
             <div>
@@ -506,18 +560,18 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
                 </select>
               </div>
             </div>
-            {partnerType === "mortgage-broker" && (
+            {partnerType === "mortgage-brokerage" && (
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">FSRA License Number</label>
+                <label className="block text-sm font-semibold text-foreground mb-1">FSRA Brokerage License Number</label>
                 <input type="text" value={company.licenseNumber}
                   onChange={(e) => setCompany((c: any) => ({ ...c, licenseNumber: e.target.value }))}
                   placeholder="e.g. M12345678"
                   className="w-full p-3 rounded-lg border-2 border-border bg-card text-foreground outline-none focus:border-accent transition-colors" />
               </div>
             )}
-            {partnerType === "real-estate" && (
+            {partnerType === "real-estate-brokerage" && (
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">RECO Registration Number</label>
+                <label className="block text-sm font-semibold text-foreground mb-1">RECO Brokerage Registration Number</label>
                 <input type="text" value={company.licenseNumber}
                   onChange={(e) => setCompany((c: any) => ({ ...c, licenseNumber: e.target.value }))}
                   placeholder="e.g. 12345"
@@ -569,7 +623,7 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
                 <label className="block text-sm font-semibold text-foreground mb-1">Title / Role</label>
                 <input type="text" value={contact.title}
                   onChange={(e) => setContact((c: any) => ({ ...c, title: e.target.value }))}
-                  placeholder="e.g. Managing Partner"
+                  placeholder="e.g. Managing Broker"
                   className="w-full p-3 rounded-lg border-2 border-border bg-card text-foreground outline-none focus:border-accent transition-colors" />
               </div>
             </div>
@@ -581,13 +635,13 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
       {step === 3 && (
         <div>
           <h2 className="text-2xl font-extrabold text-foreground mb-1">Business details</h2>
-          <p className="text-muted-foreground mb-6">Help us understand your volume and client base.</p>
+          <p className="text-muted-foreground mb-6">Help us understand your volume and team size.</p>
 
           <div className="mb-6">
             <label className="block text-sm font-semibold text-foreground mb-2">
               {partnerType === "lender" ? "Annual mortgage originations" :
-               partnerType === "mortgage-broker" ? "Annual mortgage closings" :
-               partnerType === "real-estate" ? "Annual transactions (investment properties)" :
+               partnerType === "mortgage-brokerage" ? "Annual mortgage closings (brokerage-wide)" :
+               partnerType === "real-estate-brokerage" ? "Annual investment property transactions (brokerage-wide)" :
                "Total doors managed"} *
             </label>
             <div className="flex flex-col gap-2">
@@ -601,22 +655,17 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
             </div>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-foreground mb-2">Client types you serve (select all)</label>
-            <div className="grid grid-cols-2 gap-2">
-              {["Individual landlords", "Corporate investors", "REITs / Institutional", "First-time investors", "Multi-property owners", "Condo investors"].map((ct) => (
-                <SelectionCard key={ct}
-                  selected={business.clientTypes.includes(ct)}
-                  onClick={() => setBusiness((b: any) => ({
-                    ...b,
-                    clientTypes: b.clientTypes.includes(ct)
-                      ? b.clientTypes.filter((c: string) => c !== ct)
-                      : [...b.clientTypes, ct],
-                  }))}
-                  label={ct} />
-              ))}
+          {isBrokerage && (
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-foreground mb-2">How many agents in your brokerage?</label>
+              <div className="flex flex-col gap-2">
+                {["1-5", "6-15", "16-50", "50-100", "100+"].map((v) => (
+                  <SelectionCard key={v} selected={business.agentCount === v}
+                    onClick={() => setBusiness((b: any) => ({ ...b, agentCount: v }))} label={v} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mb-6">
             <label className="block text-sm font-semibold text-foreground mb-2">How do your clients currently get landlord insurance?</label>
@@ -624,7 +673,7 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
               {[
                 { v: "broker", l: "Through a traditional insurance broker" },
                 { v: "direct", l: "Direct from an insurer" },
-                { v: "unsure", l: "Not sure / varies" },
+                { v: "unsure", l: "Not sure / varies by client" },
                 { v: "none", l: "Many don't have proper coverage" },
               ].map((o) => (
                 <SelectionCard key={o.v} selected={business.currentInsurance === o.v}
@@ -671,14 +720,14 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
                 <span className="text-xl">{ptInfo?.icon}</span>
                 <div>
                   <p className="font-medium text-foreground">{ptInfo?.label}</p>
-                  <p className="text-sm text-muted-foreground">Commission: {ptInfo?.commission}</p>
+                  <p className="text-sm text-muted-foreground">Integration: {ptInfo?.integration}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-card border-2 border-border rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-foreground">Company</h3>
+                <h3 className="font-bold text-foreground">{isBrokerage ? "Brokerage" : "Company"}</h3>
                 <button onClick={() => setStep(1)} className="text-xs text-accent font-semibold hover:underline">Edit</button>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -708,7 +757,7 @@ function PartnerApplication({ onBack, onComplete }: { onBack: () => void; onComp
               </div>
               <div className="text-sm space-y-2">
                 <div><span className="text-muted-foreground">Volume:</span> <span className="font-medium">{business.annualVolume}</span></div>
-                {business.clientTypes.length > 0 && <div><span className="text-muted-foreground">Clients:</span> <span className="font-medium">{business.clientTypes.join(", ")}</span></div>}
+                {business.agentCount && <div><span className="text-muted-foreground">Agents:</span> <span className="font-medium">{business.agentCount}</span></div>}
                 {business.integrationPreference && <div><span className="text-muted-foreground">Integration:</span> <span className="font-medium">{business.integrationPreference}</span></div>}
               </div>
             </div>
@@ -759,7 +808,7 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
         </div>
         <div className="flex gap-3">
           <button className="px-5 py-2.5 rounded-xl font-semibold bg-accent text-white hover:bg-accent/90 transition-colors text-sm">
-            Generate Referral Link
+            Generate Smart Link
           </button>
           <button onClick={onLogout}
             className="px-5 py-2.5 rounded-xl font-semibold border-2 border-border text-foreground hover:border-accent/40 transition-colors text-sm">
@@ -768,13 +817,13 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — value-focused */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Active Policies", value: d.stats.activePolicies, sub: `${d.stats.mtdPolicies} this month`, accent: false },
+          { label: "Active Policies", value: d.stats.activePolicies, sub: `${d.stats.mtdPolicies} bound this month`, accent: false },
           { label: "Total GWP", value: `$${d.stats.totalGWP.toLocaleString()}`, sub: `${d.stats.totalReferrals} total referrals`, accent: false },
-          { label: "Total Commission", value: `$${d.stats.totalCommission.toLocaleString()}`, sub: `$${d.stats.mtdCommission.toLocaleString()} this month`, accent: true },
-          { label: "Conversion Rate", value: `${d.stats.conversionRate}%`, sub: `$${d.stats.pendingCommission.toLocaleString()} pending`, accent: false },
+          { label: "Avg Days to Close", value: d.stats.avgDaysToClose.toString(), sub: "Insurance condition cleared", accent: true },
+          { label: "Conversion Rate", value: `${d.stats.conversionRate}%`, sub: `${d.stats.agentsActive} agents active`, accent: false },
         ].map((kpi, i) => (
           <div key={i} className={`rounded-2xl p-5 border-2 ${kpi.accent ? "bg-accent border-accent" : "bg-card border-border"}`}>
             <p className={`text-xs font-medium mb-1 ${kpi.accent ? "text-white/70" : "text-muted-foreground"}`}>{kpi.label}</p>
@@ -805,18 +854,18 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
             <h3 className="font-bold text-foreground mb-4">Monthly Performance</h3>
             <div className="space-y-3">
               {[
-                { month: "March 2026", referrals: 14, policies: 11, commission: 2860 },
-                { month: "February 2026", referrals: 22, policies: 18, commission: 4120 },
-                { month: "January 2026", referrals: 19, policies: 15, commission: 3540 },
-                { month: "December 2025", referrals: 16, policies: 13, commission: 2980 },
-                { month: "November 2025", referrals: 24, policies: 20, commission: 4680 },
+                { month: "March 2026", referrals: 14, policies: 11, avgClose: "1.8 days" },
+                { month: "February 2026", referrals: 22, policies: 18, avgClose: "2.1 days" },
+                { month: "January 2026", referrals: 19, policies: 15, avgClose: "2.4 days" },
+                { month: "December 2025", referrals: 16, policies: 13, avgClose: "1.9 days" },
+                { month: "November 2025", referrals: 24, policies: 20, avgClose: "2.2 days" },
               ].map((m, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                   <span className="text-sm text-foreground font-medium">{m.month}</span>
                   <div className="flex items-center gap-6 text-sm">
                     <span className="text-muted-foreground">{m.referrals} refs</span>
                     <span className="text-muted-foreground">{m.policies} bound</span>
-                    <span className="font-semibold text-accent">${m.commission.toLocaleString()}</span>
+                    <span className="font-semibold text-accent">{m.avgClose}</span>
                   </div>
                 </div>
               ))}
@@ -828,9 +877,9 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
               <h3 className="font-bold text-foreground mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 {[
-                  { label: "Generate a quote for a client", desc: "Pre-fill with client property details", action: "New Quote" },
-                  { label: "Download commission statement", desc: "February 2026 statement ready", action: "Download" },
-                  { label: "Update company information", desc: "Company details, banking, contacts", action: "Settings" },
+                  { label: "Generate a smart link for a client", desc: "Pre-fill with property address", action: "New Link" },
+                  { label: "View agent performance", desc: "See which agents are using Cedar most", action: "View" },
+                  { label: "Update brokerage information", desc: "Company details, contacts", action: "Settings" },
                   { label: "Access marketing materials", desc: "Co-branded flyers, email templates", action: "View" },
                 ].map((a, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer">
@@ -845,9 +894,9 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             <div className="bg-accent/10 border border-accent/20 rounded-2xl p-6">
-              <p className="text-sm text-accent font-semibold mb-1">Pending Commission</p>
-              <p className="text-3xl font-extrabold text-accent">${d.stats.pendingCommission.toLocaleString()}</p>
-              <p className="text-xs text-accent/60 mt-1">Next payout: March 15, 2026</p>
+              <p className="text-sm text-accent font-semibold mb-1">Client Completion Rate</p>
+              <p className="text-3xl font-extrabold text-accent">{d.stats.conversionRate}%</p>
+              <p className="text-xs text-accent/60 mt-1">Of clients who receive a smart link complete their quote</p>
             </div>
           </div>
         </div>
@@ -862,11 +911,9 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
               <div key={i} className="flex items-start gap-4 py-4 border-b border-border last:border-0">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold ${
                   a.event === "Policy bound" ? "bg-green-100 text-green-700" :
-                  a.event === "Commission paid" ? "bg-accent/10 text-accent" :
                   a.event === "Renewal processed" ? "bg-blue-100 text-blue-700" : "bg-muted/50 text-muted-foreground"
                 }`}>
                   {a.event === "Policy bound" ? "✓" :
-                   a.event === "Commission paid" ? "$" :
                    a.event === "Renewal processed" ? "↻" : "→"}
                 </div>
                 <div className="flex-1">
@@ -875,10 +922,8 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
                     <span className="text-xs text-muted-foreground">{a.date}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-0.5">{a.detail}</p>
+                  <p className="text-xs text-accent mt-1">Agent: {a.agent}</p>
                 </div>
-                {a.amount && (
-                  <span className="text-sm font-bold text-accent flex-shrink-0">+${a.amount.toLocaleString()}</span>
-                )}
               </div>
             ))}
           </div>
@@ -897,8 +942,8 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
               <tr className="border-b-2 border-border">
                 <th className="text-left text-xs font-semibold text-muted-foreground py-3">Property</th>
                 <th className="text-left text-xs font-semibold text-muted-foreground py-3">Premium</th>
+                <th className="text-left text-xs font-semibold text-muted-foreground py-3">Agent</th>
                 <th className="text-left text-xs font-semibold text-muted-foreground py-3">Status</th>
-                <th className="text-right text-xs font-semibold text-muted-foreground py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -911,12 +956,12 @@ function PartnerDashboard({ onLogout }: { onLogout: () => void }) {
                     <p className="text-sm text-foreground">${p.premium.toLocaleString()}/yr</p>
                   </td>
                   <td className="py-3">
+                    <p className="text-sm text-muted-foreground">{p.agent}</p>
+                  </td>
+                  <td className="py-3">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       p.status === "Active" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
                     }`}>{p.status}</span>
-                  </td>
-                  <td className="py-3 text-right">
-                    <button className="text-xs text-accent font-semibold hover:underline">View</button>
                   </td>
                 </tr>
               ))}

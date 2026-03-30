@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border bg-card py-16">
       <div className="container">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-x-6 gap-y-10 lg:gap-x-8">
           <div>
             <Link to="/" className="text-lg font-bold text-primary tracking-[0.3em] uppercase font-sans">
               Cedar

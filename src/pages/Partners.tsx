@@ -217,7 +217,7 @@ function PartnerLanding({ onApply, onLogin }: { onApply: () => void; onLogin: ()
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-2">
             <Zap className="w-7 h-7 text-accent" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Simplify every transaction</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Simplify Every Transaction</h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             Insurance conditions slow down closings and frustrate clients. Cedar gives your team instant quoting tools that eliminate the bottleneck — so deals close faster and clients stay happy.
           </p>

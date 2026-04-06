@@ -21,7 +21,7 @@ const QuoteProgressBar = ({ steps, currentStep }: QuoteProgressBarProps) => (
                 ? "bg-accent text-white"
                 : i === currentStep
                 ? "bg-accent text-white ring-2 ring-accent/30 ring-offset-2 ring-offset-background"
-                : "bg-muted text-muted-foreground"
+                : "bg-muted text-primary-foreground"
             }`}
           >
             {i < currentStep ? <CheckCircle className="w-4 h-4" /> : i + 1}

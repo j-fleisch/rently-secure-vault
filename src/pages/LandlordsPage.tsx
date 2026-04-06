@@ -443,7 +443,7 @@ export default function LandlordsPage() {
                 <div className="w-16 h-16 rounded-2xl bg-card border-2 border-border flex items-center justify-center mx-auto mb-4 shadow-sm">
                   {s.icon}
                 </div>
-                <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-accent text-accent-foreground text-xs font-bold mb-3">
+                <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-accent text-white text-xs font-bold mb-3">
                   {s.step}
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">{s.title}</h3>
